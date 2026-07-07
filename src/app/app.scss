@@ -1,0 +1,182 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.erp-home {
+  min-height: 100vh;
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top left, rgba(0, 166, 216, 0.28), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(0, 74, 124, 0.20), transparent 34%),
+    linear-gradient(135deg, #dff8ff 0%, #eefaff 42%, #f7fcff 100%);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #0a2a43;
+}
+
+.hero-card {
+  width: min(1220px, 100%);
+  padding: 50px;
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 30px 80px rgba(0, 54, 96, 0.18);
+  border: 1px solid rgba(164, 220, 245, 0.75);
+  backdrop-filter: blur(18px);
+}
+
+.brand-section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 34px;
+}
+
+.logo-pill {
+  width: fit-content;
+  max-width: 100%;
+  padding: 16px 24px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #ffffff, #eef9ff);
+  border: 1px solid #bfefff;
+  box-shadow: 0 18px 40px rgba(0, 102, 156, 0.16);
+}
+
+.brand-logo {
+  display: block;
+  max-width: 100%;
+  width: 720px;
+  height: auto;
+  object-fit: contain;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: #0078ad;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+h1 {
+  max-width: 980px;
+  margin: 0;
+  font-size: clamp(38px, 5vw, 68px);
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  color: #0a2744;
+}
+
+.subtitle {
+  max-width: 850px;
+  margin: 22px 0 0;
+  font-size: 18px;
+  line-height: 1.68;
+  color: #355d7d;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 42px;
+}
+
+.status-card {
+  padding: 26px;
+  border-radius: 26px;
+  background: #ffffff;
+  border: 1px solid #c7e8fb;
+  box-shadow: 0 16px 42px rgba(0, 54, 96, 0.10);
+}
+
+.status-card.highlight {
+  border-color: #7bd3f4;
+  background: linear-gradient(180deg, #ffffff 0%, #eefaff 100%);
+}
+
+.status-label {
+  display: inline-flex;
+  margin-bottom: 14px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #e4f8ff;
+  color: #0078ad;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.status-card strong {
+  display: block;
+  font-size: 21px;
+  color: #0a2744;
+}
+
+.status-card p {
+  margin: 9px 0 0;
+  color: #52718e;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+}
+
+button {
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 16px 26px;
+  font-weight: 900;
+  font-size: 15px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+.primary-button {
+  color: white;
+  border: 1px solid #005f99;
+  background: linear-gradient(135deg, #009bd1, #006ea8);
+  box-shadow: 0 16px 34px rgba(0, 118, 174, 0.28);
+}
+
+.secondary-button {
+  color: #006b7f;
+  background: #e8fbff;
+  border: 1px solid #89dcf5;
+}
+
+@media (max-width: 860px) {
+  .erp-home {
+    padding: 22px;
+  }
+
+  .hero-card {
+    padding: 28px;
+  }
+
+  .logo-pill {
+    width: 100%;
+    padding: 14px 16px;
+  }
+
+  .brand-logo {
+    width: 100%;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  h1 {
+    font-size: 38px;
+  }
+}
