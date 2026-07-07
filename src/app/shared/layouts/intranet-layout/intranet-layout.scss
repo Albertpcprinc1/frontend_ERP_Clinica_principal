@@ -1,0 +1,139 @@
+.intranet {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  background: #edf8fd;
+  color: #0a2744;
+}
+
+.sidebar {
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #073b63 0%, #005f99 100%);
+  color: white;
+}
+
+.brand {
+  padding: 16px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  margin-bottom: 28px;
+}
+
+.brand img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+nav {
+  display: grid;
+  gap: 10px;
+}
+
+nav a,
+.logout {
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-weight: 800;
+}
+
+nav a.active,
+nav a:hover {
+  color: #073b63;
+  background: white;
+}
+
+nav a.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.logout {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.workspace {
+  min-width: 0;
+  padding: 26px;
+}
+
+.topbar {
+  min-height: 86px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 26px;
+  background: white;
+  border: 1px solid #c7e8fb;
+  box-shadow: 0 16px 42px rgba(0, 54, 96, 0.08);
+}
+
+.topbar p {
+  margin: 0 0 4px;
+  color: #0078ad;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.user-chip {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #e4f8ff;
+}
+
+.user-chip span {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: linear-gradient(135deg, #009bd1, #006ea8);
+  font-weight: 900;
+}
+
+.user-chip strong,
+.user-chip small {
+  display: block;
+}
+
+.user-chip small {
+  color: #52718e;
+}
+
+.content {
+  margin-top: 24px;
+}
+
+@media (max-width: 920px) {
+  .intranet {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-radius: 0 0 28px 28px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

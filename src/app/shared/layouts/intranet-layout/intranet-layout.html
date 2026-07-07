@@ -1,0 +1,52 @@
+<div class="intranet">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="assets/images/logo_sanfernando_transparente.png" alt="San Fernando" />
+    </div>
+
+    <nav>
+      <a routerLink="/intranet/dashboard" routerLinkActive="active">
+        Dashboard
+      </a>
+
+      <a routerLink="/intranet/almacen" routerLinkActive="active">
+        Almacén / Logística
+      </a>
+
+      <a class="disabled">
+        Farmacia
+      </a>
+
+      <a class="disabled">
+        Admisión
+      </a>
+
+      <a class="disabled">
+        Laboratorio
+      </a>
+    </nav>
+
+    <a class="logout" routerLink="/login">Cerrar sesión</a>
+  </aside>
+
+  <section class="workspace">
+    <header class="topbar">
+      <div>
+        <p>Centro Médico San Fernando Huaraz</p>
+        <h1>ERP Clínica Principal</h1>
+      </div>
+
+      <div class="user-chip">
+        <span>AH</span>
+        <div>
+          <strong>Administrador</strong>
+          <small>Sesión visual</small>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </section>
+</div>

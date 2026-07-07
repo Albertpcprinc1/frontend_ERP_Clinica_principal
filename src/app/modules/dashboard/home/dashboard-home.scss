@@ -1,0 +1,55 @@
+.page-header p {
+  margin: 0 0 8px;
+  color: #0078ad;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.page-header h2 {
+  margin: 0 0 24px;
+  font-size: 34px;
+  color: #0a2744;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+article {
+  padding: 26px;
+  border-radius: 26px;
+  background: white;
+  border: 1px solid #c7e8fb;
+  box-shadow: 0 16px 42px rgba(0, 54, 96, 0.08);
+}
+
+span {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #e4f8ff;
+  color: #0078ad;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+strong {
+  display: block;
+  font-size: 36px;
+  color: #073b63;
+}
+
+p {
+  color: #52718e;
+}
+
+@media (max-width: 920px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

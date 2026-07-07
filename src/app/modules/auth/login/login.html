@@ -1,0 +1,46 @@
+<main class="login-page">
+  <section class="login-shell">
+    <div class="brand-panel">
+      <img
+        src="assets/images/logo_sanfernando_transparente.png"
+        alt="Centro Medico San Fernando"
+        class="brand-logo"
+      />
+
+      <div class="brand-copy">
+        <p class="eyebrow">ERP Clinica Principal</p>
+        <h1>Intranet clínica San Fernando</h1>
+        <p>
+          Acceso interno para gestión médica, logística farmacéutica, admisión,
+          laboratorio, farmacia y administración clínica.
+        </p>
+      </div>
+    </div>
+
+    <form class="login-card">
+      <div class="login-header">
+        <span class="badge">Acceso seguro</span>
+        <h2>Iniciar sesión</h2>
+        <p>Ingrese sus credenciales institucionales.</p>
+      </div>
+
+      <label>
+        Usuario
+        <input type="text" placeholder="usuario@sanfernando.pe" />
+      </label>
+
+      <label>
+        Contraseña
+        <input type="password" placeholder="Ingrese su contraseña" />
+      </label>
+
+      <button type="button" routerLink="/intranet/dashboard">
+        Ingresar al sistema
+      </button>
+
+      <p class="help-text">
+        Versión inicial visual. La seguridad JWT se conectará en la siguiente fase.
+      </p>
+    </form>
+  </section>
+</main>
