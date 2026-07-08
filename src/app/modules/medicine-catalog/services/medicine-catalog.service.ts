@@ -3,7 +3,13 @@ import { Injectable } from '@angular/core';
 import { forkJoin, map, Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
-import { MedicineCatalogItem } from '../models/medicine-catalog-item.model';
+import {
+  CatalogOption,
+  DciOption,
+  LaboratoryOption,
+  MedicineCatalogItem,
+  MedicineFormOptions
+} from '../models/medicine-catalog-item.model';
 
 interface ApiMedicine {
   id?: number;
@@ -13,6 +19,7 @@ interface ApiMedicine {
   laboratorioNombre?: string;
   concentracion?: string | null;
   formaFarmaceutica?: string | null;
+  presentacionComercial?: string | null;
   presentacion?: string | null;
   registroSanitario?: string | null;
   activo?: boolean;
@@ -28,12 +35,20 @@ interface ApiStockLot {
   activo?: boolean;
 }
 
+interface ApiInventoryCatalogs {
+  categorias?: CatalogOption[];
+  unidades?: CatalogOption[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class MedicineCatalogService {
   private readonly medicinesUrl = `${environment.apiUrl}/inventory/medicines`;
   private readonly stocksUrl = `${environment.apiUrl}/inventory/stocks`;
+  private readonly dciUrl = `${environment.apiUrl}/inventory/dci`;
+  private readonly laboratoriesUrl = `${environment.apiUrl}/inventory/laboratories`;
+  private readonly catalogsUrl = `${environment.apiUrl}/inventory/catalogs`;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -43,6 +58,21 @@ export class MedicineCatalogService {
       stocks: this.http.get<ApiStockLot[]>(this.stocksUrl)
     }).pipe(
       map(({ medicines, stocks }) => this.toCatalogItems(medicines ?? [], stocks ?? []))
+    );
+  }
+
+  getFormOptions(): Observable<MedicineFormOptions> {
+    return forkJoin({
+      dci: this.http.get<DciOption[]>(this.dciUrl),
+      laboratories: this.http.get<LaboratoryOption[]>(this.laboratoriesUrl),
+      catalogs: this.http.get<ApiInventoryCatalogs>(this.catalogsUrl)
+    }).pipe(
+      map(({ dci, laboratories, catalogs }) => ({
+        dci: (dci ?? []).filter((item) => item.activo ?? true),
+        laboratories: (laboratories ?? []).filter((item) => item.activo ?? true),
+        categories: catalogs?.categorias ?? [],
+        units: catalogs?.unidades ?? []
+      }))
     );
   }
 
@@ -64,7 +94,7 @@ export class MedicineCatalogService {
           laboratorioNombre: medicine.laboratorioNombre ?? 'Sin laboratorio',
           concentracion: medicine.concentracion ?? null,
           formaFarmaceutica: medicine.formaFarmaceutica ?? null,
-          presentacion: medicine.presentacion ?? null,
+          presentacionComercial: medicine.presentacionComercial ?? medicine.presentacion ?? null,
           registroSanitario: medicine.registroSanitario ?? null,
           stockTotalDisponible,
           totalLotesActivos: relatedLots.length,

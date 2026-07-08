@@ -9,9 +9,15 @@
       </p>
     </div>
 
-    <button type="button" class="refresh-button" (click)="loadMedicines()" [disabled]="isLoading()">
-      {{ isLoading() ? 'Actualizando...' : 'Actualizar' }}
-    </button>
+    <div class="hero-actions">
+      <button type="button" class="secondary-button" (click)="openNewMedicineForm()">
+        Nuevo medicamento
+      </button>
+
+      <button type="button" class="refresh-button" (click)="loadMedicines()" [disabled]="isLoading()">
+        {{ isLoading() ? 'Actualizando...' : 'Actualizar' }}
+      </button>
+    </div>
   </header>
 
   <section class="summary-grid">
@@ -105,7 +111,7 @@
 
               <td>
                 <strong>{{ item.concentracion || 'Sin concentración' }}</strong>
-                <small>{{ item.presentacion || item.formaFarmaceutica || 'Sin presentación registrada' }}</small>
+                <small>{{ item.presentacionComercial || item.formaFarmaceutica || 'Sin presentación registrada' }}</small>
               </td>
 
               <td>
@@ -139,4 +145,152 @@
       </table>
     </div>
   </section>
+
+  @if (isFormOpen()) {
+    <div class="modal-backdrop">
+      <section class="medicine-modal">
+        <header class="modal-header">
+          <div>
+            <p class="eyebrow modal-eyebrow">Registro farmacéutico</p>
+            <h2>Nuevo medicamento comercial</h2>
+            <p>
+              Formulario visual preparado. En este bloque no se registra todavía en la base de datos.
+            </p>
+          </div>
+
+          <button type="button" class="close-button" (click)="closeForm()">Cerrar</button>
+        </header>
+
+        @if (isLoadingOptions()) {
+          <div class="form-info">Cargando catálogos...</div>
+        }
+
+        @if (formErrorMessage()) {
+          <div class="alert-error">{{ formErrorMessage() }}</div>
+        }
+
+        @if (formSuccessMessage()) {
+          <div class="alert-success">{{ formSuccessMessage() }}</div>
+        }
+
+        <div class="form-grid">
+          <label>
+            DCI obligatorio
+            <select [value]="draft().dciId ?? ''" (change)="updateDraftNumber('dciId', $any($event.target).value)">
+              <option value="">Seleccione DCI...</option>
+              @for (dci of dciOptions(); track dci.id) {
+                <option [value]="dci.id">{{ dci.nombreGenerico }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Laboratorio
+            <select [value]="draft().laboratorioId ?? ''" (change)="updateDraftNumber('laboratorioId', $any($event.target).value)">
+              <option value="">Seleccione laboratorio...</option>
+              @for (lab of laboratoryOptions(); track lab.id) {
+                <option [value]="lab.id">{{ lab.nombre }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Categoría
+            <select [value]="draft().categoriaId ?? ''" (change)="updateDraftNumber('categoriaId', $any($event.target).value)">
+              <option value="">Seleccione categoría...</option>
+              @for (category of categoryOptions(); track category.id) {
+                <option [value]="category.id">{{ category.nombre }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Unidad de medida
+            <select [value]="draft().unidadMedidaId ?? ''" (change)="updateDraftNumber('unidadMedidaId', $any($event.target).value)">
+              <option value="">Seleccione unidad...</option>
+              @for (unit of unitOptions(); track unit.id) {
+                <option [value]="unit.id">{{ unit.codigo || '' }} {{ unit.nombre }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            Nombre comercial obligatorio
+            <input type="text" [value]="draft().nombreComercial" (input)="updateDraftText('nombreComercial', $any($event.target).value)" placeholder="Ej. Amoxicilina MK" />
+          </label>
+
+          <label>
+            Concentración obligatoria
+            <input type="text" [value]="draft().concentracion" (input)="updateDraftText('concentracion', $any($event.target).value)" placeholder="Ej. 500 mg" />
+          </label>
+
+          <label>
+            Forma farmacéutica obligatoria
+            <input type="text" [value]="draft().formaFarmaceutica" (input)="updateDraftText('formaFarmaceutica', $any($event.target).value)" placeholder="Ej. Cápsula" />
+          </label>
+
+          <label>
+            Presentación comercial obligatoria
+            <input type="text" [value]="draft().presentacionComercial" (input)="updateDraftText('presentacionComercial', $any($event.target).value)" placeholder="Ej. Caja x 100 cápsulas" />
+          </label>
+
+          <label>
+            Registro sanitario obligatorio
+            <input type="text" [value]="draft().registroSanitario" (input)="updateDraftText('registroSanitario', $any($event.target).value)" placeholder="Ej. RS-AMOX-500-001" />
+          </label>
+
+          <label>
+            Precio público
+            <input type="number" min="0" step="0.01" [value]="draft().precioPublico ?? ''" (input)="updateDraftNumber('precioPublico', $any($event.target).value)" />
+          </label>
+
+          <label>
+            Precio aseguradora
+            <input type="number" min="0" step="0.01" [value]="draft().precioAseguradora ?? ''" (input)="updateDraftNumber('precioAseguradora', $any($event.target).value)" />
+          </label>
+
+          <label>
+            Stock mínimo total
+            <input type="number" min="0" step="1" [value]="draft().stockMinimoTotal ?? ''" (input)="updateDraftNumber('stockMinimoTotal', $any($event.target).value)" />
+          </label>
+        </div>
+
+        <div class="check-grid">
+          <label>
+            <input type="checkbox" [checked]="draft().esGenerico" (change)="updateDraftBoolean('esGenerico', $any($event.target).checked)" />
+            Es genérico
+          </label>
+
+          <label>
+            <input type="checkbox" [checked]="draft().requiereReceta" (change)="updateDraftBoolean('requiereReceta', $any($event.target).checked)" />
+            Requiere receta
+          </label>
+
+          <label>
+            <input type="checkbox" [checked]="draft().requiereRecetaArchivada" (change)="updateDraftBoolean('requiereRecetaArchivada', $any($event.target).checked)" />
+            Requiere receta archivada
+          </label>
+        </div>
+
+        <label class="full-label">
+          Observaciones
+          <textarea rows="3" [value]="draft().observaciones" (input)="updateDraftText('observaciones', $any($event.target).value)" placeholder="Observaciones internas del medicamento..."></textarea>
+        </label>
+
+        @if (formPayloadPreview()) {
+          <div class="payload-preview">
+            <strong>JSON preparado para backend</strong>
+            <pre>{{ formPayloadPreview() }}</pre>
+          </div>
+        }
+
+        <footer class="modal-footer">
+          <button type="button" class="clear-button" (click)="closeForm()">Cancelar</button>
+          <button type="button" class="primary-button" (click)="prepareVisualPayload()">
+            Validar formulario
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
 </section>
