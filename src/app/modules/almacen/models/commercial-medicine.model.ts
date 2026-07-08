@@ -7,5 +7,10 @@ export interface CommercialMedicine {
   concentracion?: string | null;
   formaFarmaceutica?: string | null;
   presentacionComercial?: string | null;
+  unidadMedidaId?: number | null;
+  unidadMedidaCodigo?: string | null;
+  unidadMedidaNombre?: string | null;
+  unidadPresentacion?: string | null;
+  factorConversionUnidadBase?: number | null;
   activo?: boolean;
 }

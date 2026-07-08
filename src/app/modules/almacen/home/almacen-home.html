@@ -81,6 +81,11 @@
             <div class="selected-medicine-card">
               <span>Medicamento seleccionado</span>
               <strong>{{ selectedIngresoMedicineName() }}</strong>
+              <small>
+                Unidad base: {{ selectedIngresoUnidadBase() }} ·
+                Presentación: {{ selectedIngresoUnidadPresentacion() }} ·
+                Factor sugerido/editable: {{ selectedIngresoFactorConversion() }}
+              </small>
               <button type="button" (click)="clearIngresoMedicineSelection()">Cambiar</button>
             </div>
           }
@@ -111,9 +116,32 @@
         </label>
 
         <label>
-          Cantidad
-          <input type="number" min="1" placeholder="Ej. 100" [value]="ingresoCantidad()" (input)="setIngresoCantidad($any($event.target).value)" />
+          Cantidad de {{ selectedIngresoUnidadPresentacion() }}
+          <input type="number" min="1" placeholder="Ej. 5" [value]="ingresoCantidad()" (input)="setIngresoCantidad($any($event.target).value)" />
         </label>
+
+        <label>
+          Contenido por {{ selectedIngresoUnidadPresentacion() }}
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="Ej. 100"
+            [value]="ingresoFactorConversion()"
+            (input)="setIngresoFactorConversion($any($event.target).value)"
+          />
+        </label>
+
+        @if (ingresoMedicamentoId()) {
+          <div class="conversion-card">
+            <span>Cálculo automático de stock</span>
+            <strong>{{ ingresoCantidadBaseCalculada() | number:'1.0-2' }} {{ selectedIngresoUnidadBase() }}</strong>
+            <p>
+              {{ ingresoCantidad() || '0' }} {{ selectedIngresoUnidadPresentacion() }}
+              x {{ selectedIngresoFactorConversion() }} {{ selectedIngresoUnidadBase() }} por {{ selectedIngresoUnidadPresentacion() }}
+            </p>
+          </div>
+        }
 
         <label>
           Proveedor
@@ -136,7 +164,8 @@
         <strong>Ingreso proveedor</strong>
         <p>Medicamento: {{ selectedIngresoMedicineName() }}</p>
         <p>Lote: {{ ingresoLote() || 'Pendiente' }}</p>
-        <p>Cantidad: {{ ingresoCantidad() || '0' }}</p>
+        <p>Cantidad ingresada: {{ ingresoCantidad() || '0' }} {{ selectedIngresoUnidadPresentacion() }}</p>
+        <p>Stock calculado: {{ ingresoCantidadBaseCalculada() | number:'1.0-2' }} {{ selectedIngresoUnidadBase() }}</p>
         <p class="preview-note">Al ejecutar, se registrará un nuevo lote, stock real y Kardex.</p>
       </div>
 
@@ -144,7 +173,7 @@
         <div>
           <span>Acción real controlada</span>
           <strong>Registrar ingreso real</strong>
-          <p>Use primero un lote nuevo de prueba, por ejemplo LOTE-IBU-2029-001 con 20 unidades.</p>
+          <p>Use primero un lote nuevo de prueba. El sistema calculará automáticamente el stock en unidad base.</p>
         </div>
 
         <button
@@ -173,7 +202,7 @@
           <span>Resultado backend</span>
           <strong>Ingreso registrado</strong>
           <p>Lote: {{ result.numeroLote }}</p>
-          <p>Cantidad ingresada: {{ result.cantidad }}</p>
+          <p>Cantidad ingresada al lote: {{ result.cantidad }} {{ selectedIngresoUnidadBase() }}</p>
           <p>Stock disponible: {{ result.stockDisponible }}</p>
           <p>Kardex ID: {{ result.kardexId }}</p>
           <p>Tipo movimiento: {{ result.tipoMovimiento }}</p>

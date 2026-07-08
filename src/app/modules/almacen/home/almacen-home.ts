@@ -1,3 +1,4 @@
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { Component, computed, OnInit, signal } from '@angular/core';
 
 import { KardexMovement } from '../models/kardex-movement.model';
@@ -40,7 +41,7 @@ interface RealOperationConfirmation {
 
 @Component({
   selector: 'app-almacen-home',
-  imports: [],
+  imports: [CommonModule, DecimalPipe],
   templateUrl: './almacen-home.html',
   styleUrl: './almacen-home.scss'
 })
@@ -72,6 +73,7 @@ export class AlmacenHomeComponent implements OnInit {
   ingresoLote = signal('');
   ingresoVencimiento = signal('');
   ingresoCantidad = signal('');
+  ingresoFactorConversion = signal('');
   ingresoProveedor = signal('');
   ingresoMotivo = signal('Ingreso visual de prueba');
   ingresoUsuario = signal('asistente.logistico');
@@ -206,10 +208,51 @@ export class AlmacenHomeComponent implements OnInit {
     this.salidaCantidadNumber() > 0 && this.salidaCantidadNumber() > this.selectedSalidaStockDisponible()
   );
 
-  selectedIngresoMedicineName = computed(() => {
+  selectedIngresoMedicine = computed(() => {
     const medicamentoId = Number(this.ingresoMedicamentoId());
-    return this.medicineOptions().find((item) => item.medicamentoId === medicamentoId)?.medicamentoNombre ?? 'No seleccionado';
+    return this.medicines().find((item) => item.id === medicamentoId) ?? null;
   });
+
+  selectedIngresoMedicineName = computed(() => {
+    const medicamento = this.selectedIngresoMedicine();
+    return medicamento?.nombreComercial ?? 'No seleccionado';
+  });
+
+  selectedIngresoUnidadBase = computed(() => {
+    const medicamento = this.selectedIngresoMedicine();
+    return medicamento?.unidadMedidaNombre || medicamento?.unidadMedidaCodigo || 'unidad base';
+  });
+
+  selectedIngresoUnidadPresentacion = computed(() => {
+    const medicamento = this.selectedIngresoMedicine();
+    return medicamento?.unidadPresentacion || 'Unidad';
+  });
+
+  selectedIngresoFactorConversion = computed(() => {
+    const rawManualFactor = this.ingresoFactorConversion().trim();
+
+    if (rawManualFactor !== '') {
+      const manualFactor = Number(rawManualFactor);
+      return Number.isFinite(manualFactor) ? manualFactor : 0;
+    }
+
+    const catalogFactor = Number(this.selectedIngresoMedicine()?.factorConversionUnidadBase || 1);
+    return Number.isFinite(catalogFactor) && catalogFactor > 0 ? catalogFactor : 1;
+  });
+
+  ingresoCantidadPresentacionNumber = computed(() => Number(this.ingresoCantidad() || 0));
+
+  ingresoCantidadBaseCalculada = computed(() => {
+    const cantidadPresentacion = this.ingresoCantidadPresentacionNumber();
+    const factor = this.selectedIngresoFactorConversion();
+    const total = cantidadPresentacion * factor;
+
+    return Number.isFinite(total) ? total : 0;
+  });
+
+  ingresoConversionLabel = computed(() =>
+    `${this.ingresoCantidadPresentacionNumber() || 0} ${this.selectedIngresoUnidadPresentacion()} x ${this.selectedIngresoFactorConversion()} ${this.selectedIngresoUnidadBase()} = ${this.ingresoCantidadBaseCalculada()} ${this.selectedIngresoUnidadBase()}`
+  );
 
   selectedSalidaMedicineName = computed(() => {
     const medicamentoId = Number(this.salidaMedicamentoId());
@@ -305,6 +348,8 @@ export class AlmacenHomeComponent implements OnInit {
   selectIngresoMedicine(item: MedicineSearchOption): void {
     this.ingresoMedicamentoId.set(String(item.medicamentoId));
     this.ingresoMedicineSearch.set(this.formatMedicineOption(item));
+    const medicine = this.medicines().find((medicineItem) => medicineItem.id === item.medicamentoId);
+    this.ingresoFactorConversion.set(String(medicine?.factorConversionUnidadBase || 1));
     this.resetIngresoOperationState();
   }
 
@@ -317,6 +362,7 @@ export class AlmacenHomeComponent implements OnInit {
   clearIngresoMedicineSelection(): void {
     this.ingresoMedicamentoId.set('');
     this.ingresoMedicineSearch.set('');
+    this.ingresoFactorConversion.set('');
     this.resetIngresoOperationState();
   }
 
@@ -328,14 +374,15 @@ export class AlmacenHomeComponent implements OnInit {
 
   openIngresoRealConfirmation(): void {
     const medicamentoId = Number(this.ingresoMedicamentoId());
-    const cantidad = Number(this.ingresoCantidad());
+    const cantidadPresentaciones = Number(this.ingresoCantidad());
+    const cantidadBase = this.ingresoCantidadBaseCalculada();
     const numeroLote = this.ingresoLote().trim();
     const fechaVencimiento = this.ingresoVencimiento();
 
     this.ingresoErrorMessage.set('');
 
     if (this.ingresoOperationExecuted()) {
-      this.ingresoErrorMessage.set('Este ingreso ya fue registrado. Modifique los datos para habilitar una nueva operación.');
+      this.ingresoErrorMessage.set('Este ingreso ya fue registrado. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã‚Â³n.');
       return;
     }
 
@@ -345,7 +392,7 @@ export class AlmacenHomeComponent implements OnInit {
     }
 
     if (!numeroLote) {
-      this.ingresoErrorMessage.set('Ingrese el número de lote.');
+      this.ingresoErrorMessage.set('Ingrese el nÃƒÆ’Ã‚Âºmero de lote.');
       return;
     }
 
@@ -354,8 +401,13 @@ export class AlmacenHomeComponent implements OnInit {
       return;
     }
 
-    if (!cantidad || cantidad <= 0) {
-      this.ingresoErrorMessage.set('Ingrese una cantidad mayor a cero.');
+    if (!cantidadPresentaciones || cantidadPresentaciones <= 0) {
+      this.ingresoErrorMessage.set('Ingrese una cantidad de presentaciones mayor a cero.');
+      return;
+    }
+
+    if (!cantidadBase || cantidadBase <= 0) {
+      this.ingresoErrorMessage.set('El stock calculado debe ser mayor a cero.');
       return;
     }
 
@@ -363,13 +415,15 @@ export class AlmacenHomeComponent implements OnInit {
       operation: 'ingreso',
       accent: 'success',
       title: 'Confirmar ingreso real de stock',
-      subtitle: 'Esta acción creará un lote real, actualizará inventario y generará Kardex.',
-      warning: 'Operación irreversible: después de confirmar, el movimiento quedará registrado en Kardex.',
+      subtitle: 'Esta accion creara un lote real, actualizara inventario y generara Kardex.',
+      warning: 'Operacion irreversible: despues de confirmar, el movimiento quedara registrado en Kardex.',
       actionText: 'Confirmar ingreso real',
       details: [
         { label: 'Medicamento', value: this.selectedIngresoMedicineName() },
         { label: 'Lote', value: numeroLote },
-        { label: 'Cantidad', value: String(cantidad) },
+        { label: 'Cantidad ingresada', value: `${cantidadPresentaciones} ${this.selectedIngresoUnidadPresentacion()}` },
+        { label: 'Factor', value: `1 ${this.selectedIngresoUnidadPresentacion()} = ${this.selectedIngresoFactorConversion()} ${this.selectedIngresoUnidadBase()}` },
+        { label: 'Stock calculado', value: `${cantidadBase} ${this.selectedIngresoUnidadBase()}` },
         { label: 'Vencimiento', value: fechaVencimiento },
         { label: 'Usuario', value: this.ingresoUsuario() || 'No definido' }
       ]
@@ -383,7 +437,7 @@ export class AlmacenHomeComponent implements OnInit {
     this.salidaErrorMessage.set('');
 
     if (this.salidaOperationExecuted()) {
-      this.salidaErrorMessage.set('Esta salida ya fue registrada. Modifique los datos para habilitar una nueva operación.');
+      this.salidaErrorMessage.set('Esta salida ya fue registrada. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã‚Â³n.');
       return;
     }
 
@@ -406,8 +460,8 @@ export class AlmacenHomeComponent implements OnInit {
       operation: 'salida',
       accent: 'danger',
       title: 'Confirmar salida FEFO real',
-      subtitle: 'Esta acción descontará stock real aplicando FEFO y generará Kardex.',
-      warning: 'Operación irreversible: después de confirmar, el stock será descontado y el movimiento quedará auditado.',
+      subtitle: 'Esta accion descontara stock real aplicando FEFO y generara Kardex.',
+      warning: 'Operacion irreversible: despues de confirmar, el stock sera descontado y el movimiento quedara auditado.',
       actionText: 'Confirmar salida real',
       details: [
         { label: 'Medicamento', value: this.selectedSalidaMedicineName() },
@@ -448,6 +502,8 @@ export class AlmacenHomeComponent implements OnInit {
     const selected = this.medicineOptions().find((item) => item.medicamentoId === Number(value));
     if (selected) {
       this.ingresoMedicineSearch.set(this.formatMedicineOption(selected));
+      const selectedMedicine = this.medicines().find((medicineItem) => medicineItem.id === Number(value));
+      this.ingresoFactorConversion.set(String(selectedMedicine?.factorConversionUnidadBase || 1));
     }
     this.resetIngresoOperationState();
   }
@@ -464,6 +520,11 @@ export class AlmacenHomeComponent implements OnInit {
 
   setIngresoCantidad(value: string): void {
     this.ingresoCantidad.set(value);
+    this.resetIngresoOperationState();
+  }
+
+  setIngresoFactorConversion(value: string): void {
+    this.ingresoFactorConversion.set(value);
     this.resetIngresoOperationState();
   }
 
@@ -484,7 +545,8 @@ export class AlmacenHomeComponent implements OnInit {
 
   ejecutarIngresoReal(): void {
     const medicamentoId = Number(this.ingresoMedicamentoId());
-    const cantidad = Number(this.ingresoCantidad());
+    const cantidadPresentaciones = Number(this.ingresoCantidad());
+    const cantidadBase = this.ingresoCantidadBaseCalculada();
     const numeroLote = this.ingresoLote().trim();
     const fechaVencimiento = this.ingresoVencimiento();
     const proveedorId = this.providerOptions()[0]?.proveedorId ?? null;
@@ -499,7 +561,7 @@ export class AlmacenHomeComponent implements OnInit {
     }
 
     if (!numeroLote) {
-      this.ingresoErrorMessage.set('Ingrese el número de lote.');
+      this.ingresoErrorMessage.set('Ingrese el nÃƒÆ’Ã‚Âºmero de lote.');
       return;
     }
 
@@ -508,10 +570,16 @@ export class AlmacenHomeComponent implements OnInit {
       return;
     }
 
-    if (!cantidad || cantidad <= 0) {
-      this.ingresoErrorMessage.set('Ingrese una cantidad mayor a cero.');
+    if (!cantidadPresentaciones || cantidadPresentaciones <= 0) {
+      this.ingresoErrorMessage.set('Ingrese una cantidad de presentaciones mayor a cero.');
       return;
     }
+
+    if (!cantidadBase || cantidadBase <= 0) {
+      this.ingresoErrorMessage.set('El stock calculado debe ser mayor a cero.');
+      return;
+    }
+
     this.closeRealOperationConfirmation();
 
     const timestamp = Date.now();
@@ -529,13 +597,13 @@ export class AlmacenHomeComponent implements OnInit {
       ubicacionFisica: 'ALMACEN-A1-ESTANTE-03',
       costoUnitario: 0,
       stockMinimo: 10,
-      cantidad,
-      motivo: this.ingresoMotivo(),
+      cantidad: cantidadBase,
+      motivo: `${this.ingresoMotivo()} | ConversiÃƒÆ’Ã‚Â³n: ${this.ingresoConversionLabel()}`,
       usuarioResponsable: this.ingresoUsuario()
     }).subscribe({
       next: (response) => {
         this.lastIngresoResult.set(response);
-        this.ingresoSuccessMessage.set('Ingreso real registrado correctamente. Inventario y Kardex actualizados.');
+        this.ingresoSuccessMessage.set('Ingreso real registrado correctamente. Inventario y Kardex actualizados en unidad base.');
         this.ingresoOperationExecuted.set(true);
         this.submittingIngreso.set(false);
         this.loadAll();
@@ -689,7 +757,7 @@ export class AlmacenHomeComponent implements OnInit {
         this.medicines.set(items ?? []);
       },
       error: () => {
-        this.medicineErrorMessage.set('No se pudo cargar el catálogo de medicamentos.');
+        this.medicineErrorMessage.set('No se pudo cargar el catÃƒÆ’Ã‚Â¡logo de medicamentos.');
       }
     });
   }
