@@ -65,15 +65,40 @@
       </div>
 
       <div class="form-grid">
-        <label>
-          Medicamento
-          <select [value]="ingresoMedicamentoId()" (change)="setIngresoMedicamentoId($any($event.target).value)">
-            <option value="">Seleccione medicamento</option>
-            @for (item of medicineOptions(); track item.medicamentoId) {
-              <option [value]="item.medicamentoId">{{ item.medicamentoNombre }}</option>
-            }
-          </select>
-        </label>
+
+        <div class="medicine-search-field">
+          <label>
+            Medicamento
+            <input
+              type="text"
+              placeholder="Buscar por nombre comercial, DCI o registro sanitario..."
+              [value]="ingresoMedicineSearch()"
+              (input)="updateIngresoMedicineSearch($any($event.target).value)"
+            />
+          </label>
+
+          @if (ingresoMedicamentoId()) {
+            <div class="selected-medicine-card">
+              <span>Medicamento seleccionado</span>
+              <strong>{{ selectedIngresoMedicineName() }}</strong>
+              <button type="button" (click)="clearIngresoMedicineSelection()">Cambiar</button>
+            </div>
+          }
+
+          @if (ingresoMedicineSearch() && !ingresoMedicamentoId()) {
+            <div class="medicine-results">
+              @for (item of filteredIngresoMedicineOptions(); track item.medicamentoId) {
+                <button type="button" (click)="selectIngresoMedicine(item)">
+                  <strong>{{ item.medicamentoNombre }}</strong>
+                  <span>DCI: {{ item.dciNombre || 'Sin DCI registrado' }}</span>
+                  <small>RS: {{ item.registroSanitario || 'No registrado' }} · Stock: {{ item.stockDisponible || 0 }}</small>
+                </button>
+              } @empty {
+                <p>No se encontraron medicamentos por nombre comercial o DCI.</p>
+              }
+            </div>
+          }
+        </div>
 
         <label>
           Número de lote
@@ -169,15 +194,40 @@
       </div>
 
       <div class="form-grid">
-        <label>
-          Medicamento
-          <select [value]="salidaMedicamentoId()" (change)="setSalidaMedicamentoId($any($event.target).value)">
-            <option value="">Seleccione medicamento</option>
-            @for (item of medicineOptions(); track item.medicamentoId) {
-              <option [value]="item.medicamentoId">{{ item.medicamentoNombre }}</option>
-            }
-          </select>
-        </label>
+
+        <div class="medicine-search-field">
+          <label>
+            Medicamento
+            <input
+              type="text"
+              placeholder="Buscar por nombre comercial, DCI o registro sanitario..."
+              [value]="salidaMedicineSearch()"
+              (input)="updateSalidaMedicineSearch($any($event.target).value)"
+            />
+          </label>
+
+          @if (salidaMedicamentoId()) {
+            <div class="selected-medicine-card">
+              <span>Medicamento seleccionado</span>
+              <strong>{{ selectedSalidaMedicineName() }}</strong>
+              <button type="button" (click)="clearSalidaMedicineSelection()">Cambiar</button>
+            </div>
+          }
+
+          @if (salidaMedicineSearch() && !salidaMedicamentoId()) {
+            <div class="medicine-results">
+              @for (item of filteredSalidaMedicineOptions(); track item.medicamentoId) {
+                <button type="button" (click)="selectSalidaMedicine(item)">
+                  <strong>{{ item.medicamentoNombre }}</strong>
+                  <span>DCI: {{ item.dciNombre || 'Sin DCI registrado' }}</span>
+                  <small>RS: {{ item.registroSanitario || 'No registrado' }} · Stock disponible: {{ item.stockDisponible || 0 }}</small>
+                </button>
+              } @empty {
+                <p>No se encontraron medicamentos por nombre comercial o DCI.</p>
+              }
+            </div>
+          }
+        </div>
 
         <label>
           Cantidad solicitada

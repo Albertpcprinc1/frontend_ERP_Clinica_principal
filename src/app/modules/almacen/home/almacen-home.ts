@@ -1,15 +1,27 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 
 import { KardexMovement } from '../models/kardex-movement.model';
+import { CommercialMedicine } from '../models/commercial-medicine.model';
 import { StockEntryResponse } from '../models/stock-entry.model';
 import { StockLot } from '../models/stock-lot.model';
 import { StockOutputResponse } from '../models/stock-output.model';
 import { InventoryKardexService } from '../services/inventory-kardex.service';
+import { InventoryMedicineService } from '../services/inventory-medicine.service';
 import { InventoryStockService } from '../services/inventory-stock.service';
 
 type AlmacenTab = 'inventario' | 'kardex' | 'alertas';
 type StockFilter = 'todos' | 'stockBajo' | 'porVencer' | 'vencidos';
 type OperationPanel = 'ingreso' | 'salida' | null;
+
+interface MedicineSearchOption {
+  medicamentoId: number;
+  medicamentoNombre: string;
+  dciNombre: string;
+  registroSanitario: string;
+  concentracion: string;
+  presentacionComercial: string;
+  stockDisponible: number;
+}
 
 interface RealOperationConfirmationDetail {
   label: string;
@@ -37,6 +49,7 @@ export class AlmacenHomeComponent implements OnInit {
   activeOperation = signal<OperationPanel>(null);
 
   stocks = signal<StockLot[]>([]);
+  medicines = signal<CommercialMedicine[]>([]);
   kardex = signal<KardexMovement[]>([]);
 
   loadingStocks = signal(true);
@@ -44,9 +57,13 @@ export class AlmacenHomeComponent implements OnInit {
 
   stockErrorMessage = signal('');
   kardexErrorMessage = signal('');
+  medicineErrorMessage = signal('');
 
   stockSearch = signal('');
   stockFilter = signal<StockFilter>('todos');
+
+  ingresoMedicineSearch = signal('');
+  salidaMedicineSearch = signal('');
 
   kardexSearch = signal('');
   kardexMovementFilter = signal('TODOS');
@@ -105,12 +122,38 @@ export class AlmacenHomeComponent implements OnInit {
     this.stocks().filter((item) => item.alertaVencimiento || item.vencido)
   );
 
-  medicineOptions = computed(() => {
-    const map = new Map<number, StockLot>();
+  medicineOptions = computed<MedicineSearchOption[]>(() => {
+    const catalogOptions = this.medicines()
+      .filter((item) => item && item.id && item.nombreComercial)
+      .map((item) => ({
+        medicamentoId: item.id,
+        medicamentoNombre: item.nombreComercial,
+        dciNombre: item.dciNombre ?? '',
+        registroSanitario: item.registroSanitario ?? '',
+        concentracion: item.concentracion ?? '',
+        presentacionComercial: item.presentacionComercial ?? '',
+        stockDisponible: this.stockDisponibleByMedicineId(item.id)
+      }));
+
+    if (catalogOptions.length > 0) {
+      return catalogOptions.sort((a, b) =>
+        a.medicamentoNombre.localeCompare(b.medicamentoNombre)
+      );
+    }
+
+    const map = new Map<number, MedicineSearchOption>();
 
     for (const item of this.stocks()) {
       if (!map.has(item.medicamentoId)) {
-        map.set(item.medicamentoId, item);
+        map.set(item.medicamentoId, {
+          medicamentoId: item.medicamentoId,
+          medicamentoNombre: item.medicamentoNombre,
+          dciNombre: item.dciNombre ?? '',
+          registroSanitario: item.registroSanitario ?? '',
+          concentracion: '',
+          presentacionComercial: '',
+          stockDisponible: this.stockDisponibleByMedicineId(item.medicamentoId)
+        });
       }
     }
 
@@ -129,9 +172,17 @@ export class AlmacenHomeComponent implements OnInit {
     }
 
     return Array.from(map.values()).sort((a, b) =>
-      a.proveedorNombre.localeCompare(b.proveedorNombre)
+      (a.proveedorNombre ?? '').localeCompare(b.proveedorNombre ?? '')
     );
   });
+
+  filteredIngresoMedicineOptions = computed(() =>
+    this.filterMedicineOptions(this.ingresoMedicineSearch())
+  );
+
+  filteredSalidaMedicineOptions = computed(() =>
+    this.filterMedicineOptions(this.salidaMedicineSearch())
+  );
 
   selectedSalidaLots = computed(() => {
     const medicamentoId = Number(this.salidaMedicamentoId());
@@ -217,10 +268,12 @@ export class AlmacenHomeComponent implements OnInit {
 
   constructor(
     private readonly stockService: InventoryStockService,
+    private readonly medicineService: InventoryMedicineService,
     private readonly kardexService: InventoryKardexService
   ) {}
 
   ngOnInit(): void {
+    this.loadMedicines();
     this.loadStocks();
     this.loadKardex();
   }
@@ -235,6 +288,42 @@ export class AlmacenHomeComponent implements OnInit {
 
   closeOperation(): void {
     this.activeOperation.set(null);
+  }
+
+  updateIngresoMedicineSearch(value: string): void {
+    this.ingresoMedicineSearch.set(value);
+    this.ingresoMedicamentoId.set('');
+    this.resetIngresoOperationState();
+  }
+
+  updateSalidaMedicineSearch(value: string): void {
+    this.salidaMedicineSearch.set(value);
+    this.salidaMedicamentoId.set('');
+    this.resetSalidaOperationState();
+  }
+
+  selectIngresoMedicine(item: MedicineSearchOption): void {
+    this.ingresoMedicamentoId.set(String(item.medicamentoId));
+    this.ingresoMedicineSearch.set(this.formatMedicineOption(item));
+    this.resetIngresoOperationState();
+  }
+
+  selectSalidaMedicine(item: MedicineSearchOption): void {
+    this.salidaMedicamentoId.set(String(item.medicamentoId));
+    this.salidaMedicineSearch.set(this.formatMedicineOption(item));
+    this.resetSalidaOperationState();
+  }
+
+  clearIngresoMedicineSelection(): void {
+    this.ingresoMedicamentoId.set('');
+    this.ingresoMedicineSearch.set('');
+    this.resetIngresoOperationState();
+  }
+
+  clearSalidaMedicineSelection(): void {
+    this.salidaMedicamentoId.set('');
+    this.salidaMedicineSearch.set('');
+    this.resetSalidaOperationState();
   }
 
   openIngresoRealConfirmation(): void {
@@ -356,6 +445,10 @@ export class AlmacenHomeComponent implements OnInit {
 
   setIngresoMedicamentoId(value: string): void {
     this.ingresoMedicamentoId.set(value);
+    const selected = this.medicineOptions().find((item) => item.medicamentoId === Number(value));
+    if (selected) {
+      this.ingresoMedicineSearch.set(this.formatMedicineOption(selected));
+    }
     this.resetIngresoOperationState();
   }
 
@@ -457,6 +550,10 @@ export class AlmacenHomeComponent implements OnInit {
 
   setSalidaMedicamentoId(value: string): void {
     this.salidaMedicamentoId.set(value);
+    const selected = this.medicineOptions().find((item) => item.medicamentoId === Number(value));
+    if (selected) {
+      this.salidaMedicineSearch.set(this.formatMedicineOption(selected));
+    }
     this.resetSalidaOperationState();
   }
 
@@ -579,8 +676,22 @@ export class AlmacenHomeComponent implements OnInit {
   }
 
   loadAll(): void {
+    this.loadMedicines();
     this.loadStocks();
     this.loadKardex();
+  }
+
+  loadMedicines(): void {
+    this.medicineErrorMessage.set('');
+
+    this.medicineService.getMedicines().subscribe({
+      next: (items) => {
+        this.medicines.set(items ?? []);
+      },
+      error: () => {
+        this.medicineErrorMessage.set('No se pudo cargar el catálogo de medicamentos.');
+      }
+    });
   }
 
   loadStocks(): void {
@@ -613,6 +724,36 @@ export class AlmacenHomeComponent implements OnInit {
         this.loadingKardex.set(false);
       }
     });
+  }
+
+  private filterMedicineOptions(searchValue: string): MedicineSearchOption[] {
+    const search = this.normalize(searchValue);
+
+    if (!search) {
+      return this.medicineOptions().slice(0, 8);
+    }
+
+    return this.medicineOptions()
+      .filter((item) =>
+        this.normalize(item.medicamentoNombre).includes(search) ||
+        this.normalize(item.dciNombre).includes(search) ||
+        this.normalize(item.registroSanitario).includes(search) ||
+        this.normalize(item.concentracion).includes(search) ||
+        this.normalize(item.presentacionComercial).includes(search)
+      )
+      .slice(0, 10);
+  }
+
+  private formatMedicineOption(item: MedicineSearchOption): string {
+    const dci = item.dciNombre ? ` | DCI: ${item.dciNombre}` : '';
+    const rs = item.registroSanitario ? ` | RS: ${item.registroSanitario}` : '';
+    return `${item.medicamentoNombre}${dci}${rs}`;
+  }
+
+  private stockDisponibleByMedicineId(medicamentoId: number): number {
+    return this.stocks()
+      .filter((item) => item.medicamentoId === medicamentoId)
+      .reduce((total, item) => total + Number(item.stockDisponible || 0), 0);
   }
 
   private normalize(value: string | number | null | undefined): string {
