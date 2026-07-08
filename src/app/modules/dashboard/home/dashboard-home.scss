@@ -1,4 +1,5 @@
-.page-header p {
+.page-header p,
+.panel-header p {
   margin: 0 0 8px;
   color: #0078ad;
   font-weight: 900;
@@ -6,7 +7,8 @@
   letter-spacing: 0.1em;
 }
 
-.page-header h2 {
+.page-header h2,
+.panel-header h3 {
   margin: 0 0 24px;
   font-size: 34px;
   color: #0a2744;
@@ -18,7 +20,9 @@
   gap: 18px;
 }
 
-article {
+article,
+.state-card,
+.kardex-panel {
   padding: 26px;
   border-radius: 26px;
   background: white;
@@ -40,7 +44,7 @@ span {
 
 strong {
   display: block;
-  font-size: 36px;
+  font-size: 34px;
   color: #073b63;
 }
 
@@ -48,8 +52,76 @@ p {
   color: #52718e;
 }
 
-@media (max-width: 920px) {
+.state-card {
+  max-width: 560px;
+}
+
+.state-card.error {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.state-card.error strong {
+  color: #991b1b;
+}
+
+button {
+  border: 1px solid #005f99;
+  border-radius: 999px;
+  padding: 12px 18px;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  background: linear-gradient(135deg, #009bd1, #006ea8);
+}
+
+.kardex-panel {
+  margin-top: 22px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid #d8eef8;
+  color: #123a5c;
+}
+
+th {
+  font-size: 12px;
+  color: #0078ad;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 1100px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
   .cards {
     grid-template-columns: 1fr;
+  }
+
+  .panel-header {
+    flex-direction: column;
   }
 }
