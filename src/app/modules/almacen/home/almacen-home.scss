@@ -3,7 +3,8 @@
 .inventory-panel,
 .summary-grid article,
 .alerts-grid article,
-.alert-item {
+.alert-item,
+.filter-panel {
   border-radius: 26px;
   background: white;
   border: 1px solid #c7e8fb;
@@ -128,18 +129,25 @@ button {
   margin-bottom: 22px;
 }
 
-.tabs button {
+.tabs button,
+button.filter-chip,
+.clear-button {
   color: #006b91;
   background: #e8fbff;
   border: 1px solid #9be3fb;
   box-shadow: none;
 }
 
-.tabs button.active {
+.tabs button.active,
+button.filter-chip.active {
   color: white;
   background: linear-gradient(135deg, #009bd1, #006ea8);
   border-color: #005f99;
   box-shadow: 0 12px 24px rgba(0, 118, 174, 0.18);
+}
+
+.clear-button {
+  align-self: end;
 }
 
 .inventory-panel {
@@ -156,6 +164,52 @@ button {
 
 .result-count {
   margin-top: 0;
+}
+
+.filter-panel {
+  padding: 18px;
+  margin-bottom: 18px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  box-shadow: none;
+  background: #f8fdff;
+}
+
+.filter-panel.kardex-filter {
+  grid-template-columns: 1.3fr 0.7fr auto;
+  align-items: end;
+}
+
+.filter-panel label {
+  display: grid;
+  gap: 8px;
+  color: #123a5c;
+  font-weight: 900;
+}
+
+.filter-panel input,
+.filter-panel select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #bfe4f7;
+  border-radius: 16px;
+  padding: 10px 14px;
+  color: #0a2744;
+  background: white;
+  outline: none;
+}
+
+.filter-panel input:focus,
+.filter-panel select:focus {
+  border-color: #009bd1;
+  box-shadow: 0 0 0 4px rgba(0, 155, 209, 0.12);
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .table-wrap {
@@ -225,6 +279,13 @@ tr.expired {
   background: #fff7f7;
 }
 
+.empty-table {
+  padding: 28px;
+  text-align: center;
+  color: #52718e;
+  font-weight: 800;
+}
+
 .alert-list {
   margin-top: 24px;
 }
@@ -267,6 +328,10 @@ tr.expired {
   .summary-grid,
   .alerts-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-panel.kardex-filter {
+    grid-template-columns: 1fr;
   }
 }
 

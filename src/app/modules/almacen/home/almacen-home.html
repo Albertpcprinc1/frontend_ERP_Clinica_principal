@@ -75,7 +75,55 @@
             <h3>Stock farmacéutico</h3>
           </div>
 
-          <span class="result-count">{{ totalLotes() }} lote(s)</span>
+          <span class="result-count">
+            {{ filteredStocks().length }} de {{ totalLotes() }} lote(s)
+          </span>
+        </div>
+
+        <div class="filter-panel">
+          <label>
+            Buscar inventario
+            <input
+              type="text"
+              placeholder="Medicamento, DCI, lote, proveedor, ubicación..."
+              [value]="stockSearch()"
+              (input)="setStockSearch($any($event.target).value)"
+            />
+          </label>
+
+          <div class="filter-actions">
+            <button type="button"
+                    class="filter-chip"
+                    [class.active]="stockFilter() === 'todos'"
+                    (click)="setStockFilter('todos')">
+              Todos
+            </button>
+
+            <button type="button"
+                    class="filter-chip"
+                    [class.active]="stockFilter() === 'stockBajo'"
+                    (click)="setStockFilter('stockBajo')">
+              Stock bajo
+            </button>
+
+            <button type="button"
+                    class="filter-chip"
+                    [class.active]="stockFilter() === 'porVencer'"
+                    (click)="setStockFilter('porVencer')">
+              Por vencer
+            </button>
+
+            <button type="button"
+                    class="filter-chip"
+                    [class.active]="stockFilter() === 'vencidos'"
+                    (click)="setStockFilter('vencidos')">
+              Vencidos
+            </button>
+
+            <button type="button" class="clear-button" (click)="clearStockFilters()">
+              Limpiar
+            </button>
+          </div>
         </div>
 
         <div class="table-wrap">
@@ -98,7 +146,7 @@
             </thead>
 
             <tbody>
-              @for (item of stocks(); track item.inventarioLoteId) {
+              @for (item of filteredStocks(); track item.inventarioLoteId) {
                 <tr [class.low-stock]="item.alertaStockBajo" [class.expired]="item.vencido">
                   <td>
                     <strong class="medicine-name">{{ item.medicamentoNombre }}</strong>
@@ -125,6 +173,12 @@
                   <td>{{ item.stockMinimo }}</td>
                   <td>{{ item.proveedorNombre }}</td>
                   <td>{{ item.ubicacionFisica }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="12" class="empty-table">
+                    No se encontraron lotes con los filtros aplicados.
+                  </td>
                 </tr>
               }
             </tbody>
@@ -154,7 +208,37 @@
             <h3>Kardex de inventario</h3>
           </div>
 
-          <span class="result-count">{{ kardex().length }} movimiento(s)</span>
+          <span class="result-count">
+            {{ filteredKardex().length }} de {{ kardex().length }} movimiento(s)
+          </span>
+        </div>
+
+        <div class="filter-panel kardex-filter">
+          <label>
+            Buscar Kardex
+            <input
+              type="text"
+              placeholder="Medicamento, lote, movimiento, usuario, referencia..."
+              [value]="kardexSearch()"
+              (input)="setKardexSearch($any($event.target).value)"
+            />
+          </label>
+
+          <label>
+            Tipo de movimiento
+            <select
+              [value]="kardexMovementFilter()"
+              (change)="setKardexMovementFilter($any($event.target).value)">
+              <option value="TODOS">Todos</option>
+              @for (movement of movementTypes(); track movement) {
+                <option [value]="movement">{{ movement }}</option>
+              }
+            </select>
+          </label>
+
+          <button type="button" class="clear-button" (click)="clearKardexFilters()">
+            Limpiar filtros
+          </button>
         </div>
 
         <div class="table-wrap">
@@ -176,7 +260,7 @@
             </thead>
 
             <tbody>
-              @for (item of kardex(); track item.id) {
+              @for (item of filteredKardex(); track item.id) {
                 <tr>
                   <td>{{ item.id }}</td>
                   <td>
@@ -198,6 +282,12 @@
                   </td>
                   <td>{{ item.usuarioResponsable }}</td>
                   <td>{{ item.fechaMovimiento }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="11" class="empty-table">
+                    No se encontraron movimientos con los filtros aplicados.
+                  </td>
                 </tr>
               }
             </tbody>
