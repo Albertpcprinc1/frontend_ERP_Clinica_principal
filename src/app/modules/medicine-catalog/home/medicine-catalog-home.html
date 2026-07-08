@@ -1,0 +1,142 @@
+<section class="medicine-page">
+  <header class="medicine-hero">
+    <div>
+      <p class="eyebrow">Inventario farmacéutico</p>
+      <h1>Medicamentos comerciales vinculados a DCI</h1>
+      <p class="hero-description">
+        Consulta de medicamentos comerciales asociados a su Denominación Común Internacional,
+        laboratorio, presentación, registro sanitario y stock consolidado por lotes.
+      </p>
+    </div>
+
+    <button type="button" class="refresh-button" (click)="loadMedicines()" [disabled]="isLoading()">
+      {{ isLoading() ? 'Actualizando...' : 'Actualizar' }}
+    </button>
+  </header>
+
+  <section class="summary-grid">
+    <article class="summary-card">
+      <span>Total medicamentos</span>
+      <strong>{{ totalMedicamentos() }}</strong>
+      <small>Productos comerciales registrados</small>
+    </article>
+
+    <article class="summary-card success">
+      <span>Con stock</span>
+      <strong>{{ totalConStock() }}</strong>
+      <small>Medicamentos con inventario disponible</small>
+    </article>
+
+    <article class="summary-card warning">
+      <span>Sin stock</span>
+      <strong>{{ totalSinStock() }}</strong>
+      <small>Medicamentos visibles con stock 0</small>
+    </article>
+
+    <article class="summary-card info">
+      <span>Stock total</span>
+      <strong>{{ stockTotalCatalogo() | number:'1.0-2' }}</strong>
+      <small>Unidades disponibles consolidadas</small>
+    </article>
+  </section>
+
+  <section class="toolbar">
+    <label>
+      Buscar medicamento
+      <input
+        type="text"
+        placeholder="Buscar por nombre comercial, DCI, laboratorio o registro sanitario..."
+        [value]="searchText()"
+        (input)="updateSearchText($any($event.target).value)"
+      />
+    </label>
+
+    @if (searchText()) {
+      <button type="button" class="clear-button" (click)="clearSearch()">Limpiar búsqueda</button>
+    }
+  </section>
+
+  @if (errorMessage()) {
+    <div class="alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <section class="medicine-table-card">
+    <div class="table-header">
+      <div>
+        <h2>Listado de medicamentos comerciales</h2>
+        <p>
+          Cada medicamento comercial debe estar vinculado a un DCI maestro.
+        </p>
+      </div>
+
+      <span>{{ filteredMedicines().length }} resultado(s)</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Medicamento comercial</th>
+            <th>DCI</th>
+            <th>Laboratorio</th>
+            <th>Concentración / presentación</th>
+            <th>Registro sanitario</th>
+            <th>Lotes</th>
+            <th>Stock</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of filteredMedicines(); track item.medicamentoId) {
+            <tr>
+              <td>
+                <strong>{{ item.nombreComercial }}</strong>
+                <small>ID medicamento: {{ item.medicamentoId }}</small>
+              </td>
+
+              <td>
+                <span class="dci-pill">{{ item.dciNombre }}</span>
+              </td>
+
+              <td>{{ item.laboratorioNombre }}</td>
+
+              <td>
+                <strong>{{ item.concentracion || 'Sin concentración' }}</strong>
+                <small>{{ item.presentacion || item.formaFarmaceutica || 'Sin presentación registrada' }}</small>
+              </td>
+
+              <td>
+                {{ item.registroSanitario || 'Sin registro sanitario' }}
+              </td>
+
+              <td>
+                <span class="number-pill">
+                  {{ item.totalLotesActivos }}
+                </span>
+              </td>
+
+              <td>
+                <strong>{{ item.stockTotalDisponible | number:'1.0-2' }}</strong>
+              </td>
+
+              <td>
+                <span class="status-pill" [class.status-success]="hasStock(item)" [class.status-empty]="!hasStock(item)">
+                  {{ stockStatusLabel(item) }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-state">
+                No se encontraron medicamentos comerciales con los filtros aplicados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

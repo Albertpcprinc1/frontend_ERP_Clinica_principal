@@ -35,6 +35,11 @@ export const routes: Routes = [
         path: 'catalogo-dci',
         loadComponent: () =>
           import('./modules/dci-catalog/home/dci-catalog-home').then((m) => m.DciCatalogHomeComponent)
+      },
+      {
+        path: 'medicamentos',
+        loadComponent: () =>
+          import('./modules/medicine-catalog/home/medicine-catalog-home').then((m) => m.MedicineCatalogHomeComponent)
       }
     ]
   },
