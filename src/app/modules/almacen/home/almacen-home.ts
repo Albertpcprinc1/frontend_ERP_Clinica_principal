@@ -1,7 +1,11 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 
+import { KardexMovement } from '../models/kardex-movement.model';
 import { StockLot } from '../models/stock-lot.model';
+import { InventoryKardexService } from '../services/inventory-kardex.service';
 import { InventoryStockService } from '../services/inventory-stock.service';
+
+type AlmacenTab = 'inventario' | 'kardex' | 'alertas';
 
 @Component({
   selector: 'app-almacen-home',
@@ -10,9 +14,16 @@ import { InventoryStockService } from '../services/inventory-stock.service';
   styleUrl: './almacen-home.scss'
 })
 export class AlmacenHomeComponent implements OnInit {
+  activeTab = signal<AlmacenTab>('inventario');
+
   stocks = signal<StockLot[]>([]);
-  loading = signal(true);
-  errorMessage = signal('');
+  kardex = signal<KardexMovement[]>([]);
+
+  loadingStocks = signal(true);
+  loadingKardex = signal(true);
+
+  stockErrorMessage = signal('');
+  kardexErrorMessage = signal('');
 
   totalLotes = computed(() => this.stocks().length);
 
@@ -32,24 +43,61 @@ export class AlmacenHomeComponent implements OnInit {
     this.stocks().filter((item) => item.vencido).length
   );
 
-  constructor(private readonly stockService: InventoryStockService) {}
+  alertasStockBajo = computed(() =>
+    this.stocks().filter((item) => item.alertaStockBajo)
+  );
+
+  alertasVencimiento = computed(() =>
+    this.stocks().filter((item) => item.alertaVencimiento || item.vencido)
+  );
+
+  constructor(
+    private readonly stockService: InventoryStockService,
+    private readonly kardexService: InventoryKardexService
+  ) {}
 
   ngOnInit(): void {
     this.loadStocks();
+    this.loadKardex();
+  }
+
+  setTab(tab: AlmacenTab): void {
+    this.activeTab.set(tab);
+  }
+
+  loadAll(): void {
+    this.loadStocks();
+    this.loadKardex();
   }
 
   loadStocks(): void {
-    this.loading.set(true);
-    this.errorMessage.set('');
+    this.loadingStocks.set(true);
+    this.stockErrorMessage.set('');
 
     this.stockService.getStocks().subscribe({
       next: (items) => {
         this.stocks.set(items);
-        this.loading.set(false);
+        this.loadingStocks.set(false);
       },
       error: () => {
-        this.errorMessage.set('No se pudo cargar el inventario desde el backend.');
-        this.loading.set(false);
+        this.stockErrorMessage.set('No se pudo cargar el inventario desde el backend.');
+        this.loadingStocks.set(false);
+      }
+    });
+  }
+
+  loadKardex(): void {
+    this.loadingKardex.set(true);
+    this.kardexErrorMessage.set('');
+
+    this.kardexService.getKardex().subscribe({
+      next: (items) => {
+        this.kardex.set(items);
+        this.loadingKardex.set(false);
+      },
+      error: () => {
+        this.kardexErrorMessage.set('No se pudo cargar el Kardex desde el backend.');
+        this.loadingKardex.set(false);
       }
     });
   }

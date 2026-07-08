@@ -1,7 +1,9 @@
 .page-header,
 .state-card,
 .inventory-panel,
-.summary-grid article {
+.summary-grid article,
+.alerts-grid article,
+.alert-item {
   border-radius: 26px;
   background: white;
   border: 1px solid #c7e8fb;
@@ -37,6 +39,7 @@
 .page-header span,
 .result-count,
 .summary-grid span,
+.alerts-grid span,
 .status-pill {
   display: inline-flex;
   width: fit-content;
@@ -73,7 +76,9 @@ button {
 }
 
 .state-card p,
-.summary-grid p {
+.summary-grid p,
+.alerts-grid p,
+.alert-item p {
   color: #52718e;
 }
 
@@ -86,26 +91,55 @@ button {
   color: #991b1b;
 }
 
-.summary-grid {
+.summary-grid,
+.alerts-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 18px;
   margin-bottom: 22px;
 }
 
-.summary-grid article {
+.alerts-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.summary-grid article,
+.alerts-grid article {
   padding: 24px;
 }
 
-.summary-grid span {
+.summary-grid span,
+.alerts-grid span {
   margin-top: 0;
   margin-bottom: 12px;
 }
 
-.summary-grid strong {
+.summary-grid strong,
+.alerts-grid strong {
   display: block;
   font-size: 34px;
   color: #073b63;
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.tabs button {
+  color: #006b91;
+  background: #e8fbff;
+  border: 1px solid #9be3fb;
+  box-shadow: none;
+}
+
+.tabs button.active {
+  color: white;
+  background: linear-gradient(135deg, #009bd1, #006ea8);
+  border-color: #005f99;
+  box-shadow: 0 12px 24px rgba(0, 118, 174, 0.18);
 }
 
 .inventory-panel {
@@ -178,6 +212,11 @@ td small {
   color: #b91c1c;
 }
 
+.status-pill.movement {
+  background: #eef6ff;
+  color: #005f99;
+}
+
 tr.low-stock {
   background: #fffdf5;
 }
@@ -186,8 +225,47 @@ tr.expired {
   background: #fff7f7;
 }
 
+.alert-list {
+  margin-top: 24px;
+}
+
+.alert-list h4 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  color: #073b63;
+}
+
+.alert-item {
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: none;
+  border-color: #fde68a;
+  background: #fffdf5;
+}
+
+.alert-item strong {
+  display: block;
+  color: #073b63;
+}
+
+.alert-item span {
+  display: inline-flex;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.empty-message {
+  color: #52718e;
+}
+
 @media (max-width: 1200px) {
-  .summary-grid {
+  .summary-grid,
+  .alerts-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -198,7 +276,8 @@ tr.expired {
     flex-direction: column;
   }
 
-  .summary-grid {
+  .summary-grid,
+  .alerts-grid {
     grid-template-columns: 1fr;
   }
 }

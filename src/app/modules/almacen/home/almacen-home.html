@@ -6,108 +6,254 @@
       <span>FEFO + lotes + Kardex</span>
     </div>
 
-    <button type="button" (click)="loadStocks()">Actualizar inventario</button>
+    <button type="button" (click)="loadAll()">Actualizar información</button>
   </div>
 
-  @if (loading()) {
-    <div class="state-card">
-      <strong>Cargando inventario...</strong>
-      <p>Consultando lotes desde el backend.</p>
-    </div>
-  } @else if (errorMessage()) {
-    <div class="state-card error">
-      <strong>Backend no disponible</strong>
-      <p>{{ errorMessage() }}</p>
-      <button type="button" (click)="loadStocks()">Reintentar</button>
-    </div>
-  } @else {
-    <div class="summary-grid">
-      <article>
-        <span>Lotes activos</span>
-        <strong>{{ totalLotes() }}</strong>
-        <p>Total de lotes registrados.</p>
-      </article>
+  <div class="summary-grid">
+    <article>
+      <span>Lotes activos</span>
+      <strong>{{ totalLotes() }}</strong>
+      <p>Total de lotes registrados.</p>
+    </article>
 
-      <article>
-        <span>Stock disponible</span>
-        <strong>{{ stockTotalDisponible() }}</strong>
-        <p>Stock disponible total.</p>
-      </article>
+    <article>
+      <span>Stock disponible</span>
+      <strong>{{ stockTotalDisponible() }}</strong>
+      <p>Stock disponible total.</p>
+    </article>
 
-      <article>
-        <span>Stock bajo</span>
-        <strong>{{ lotesStockBajo() }}</strong>
-        <p>Lotes con alerta de stock mínimo.</p>
-      </article>
+    <article>
+      <span>Stock bajo</span>
+      <strong>{{ lotesStockBajo() }}</strong>
+      <p>Lotes con alerta de stock mínimo.</p>
+    </article>
 
-      <article>
-        <span>Por vencer</span>
-        <strong>{{ lotesPorVencer() }}</strong>
-        <p>Lotes próximos a vencer.</p>
-      </article>
-    </div>
+    <article>
+      <span>Kardex</span>
+      <strong>{{ kardex().length }}</strong>
+      <p>Movimientos logísticos registrados.</p>
+    </article>
+  </div>
 
+  <div class="tabs">
+    <button type="button"
+            [class.active]="activeTab() === 'inventario'"
+            (click)="setTab('inventario')">
+      Inventario por lote
+    </button>
+
+    <button type="button"
+            [class.active]="activeTab() === 'kardex'"
+            (click)="setTab('kardex')">
+      Kardex
+    </button>
+
+    <button type="button"
+            [class.active]="activeTab() === 'alertas'"
+            (click)="setTab('alertas')">
+      Alertas
+    </button>
+  </div>
+
+  @if (activeTab() === 'inventario') {
+    @if (loadingStocks()) {
+      <div class="state-card">
+        <strong>Cargando inventario...</strong>
+        <p>Consultando lotes desde el backend.</p>
+      </div>
+    } @else if (stockErrorMessage()) {
+      <div class="state-card error">
+        <strong>Backend no disponible</strong>
+        <p>{{ stockErrorMessage() }}</p>
+        <button type="button" (click)="loadStocks()">Reintentar</button>
+      </div>
+    } @else {
+      <section class="inventory-panel">
+        <div class="panel-header">
+          <div>
+            <p>Inventario real por lote</p>
+            <h3>Stock farmacéutico</h3>
+          </div>
+
+          <span class="result-count">{{ totalLotes() }} lote(s)</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Medicamento</th>
+                <th>DCI</th>
+                <th>Registro sanitario</th>
+                <th>Lote</th>
+                <th>Vencimiento</th>
+                <th>Estado</th>
+                <th>Stock actual</th>
+                <th>Comprometido</th>
+                <th>Disponible</th>
+                <th>Mínimo</th>
+                <th>Proveedor</th>
+                <th>Ubicación</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (item of stocks(); track item.inventarioLoteId) {
+                <tr [class.low-stock]="item.alertaStockBajo" [class.expired]="item.vencido">
+                  <td>
+                    <strong class="medicine-name">{{ item.medicamentoNombre }}</strong>
+                  </td>
+                  <td>{{ item.dciNombre }}</td>
+                  <td>{{ item.registroSanitario }}</td>
+                  <td>{{ item.numeroLote }}</td>
+                  <td>
+                    {{ item.fechaVencimiento }}
+                    <small>{{ item.diasParaVencer }} día(s)</small>
+                  </td>
+                  <td>
+                    <span class="status-pill"
+                          [class.warning]="item.alertaVencimiento"
+                          [class.danger]="item.vencido">
+                      {{ item.estadoVencimiento }}
+                    </span>
+                  </td>
+                  <td>{{ item.stockActual }}</td>
+                  <td>{{ item.stockComprometido }}</td>
+                  <td>
+                    <strong class="stock-available">{{ item.stockDisponible }}</strong>
+                  </td>
+                  <td>{{ item.stockMinimo }}</td>
+                  <td>{{ item.proveedorNombre }}</td>
+                  <td>{{ item.ubicacionFisica }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
+
+  @if (activeTab() === 'kardex') {
+    @if (loadingKardex()) {
+      <div class="state-card">
+        <strong>Cargando Kardex...</strong>
+        <p>Consultando movimientos logísticos desde el backend.</p>
+      </div>
+    } @else if (kardexErrorMessage()) {
+      <div class="state-card error">
+        <strong>Backend no disponible</strong>
+        <p>{{ kardexErrorMessage() }}</p>
+        <button type="button" (click)="loadKardex()">Reintentar</button>
+      </div>
+    } @else {
+      <section class="inventory-panel">
+        <div class="panel-header">
+          <div>
+            <p>Auditoría logística</p>
+            <h3>Kardex de inventario</h3>
+          </div>
+
+          <span class="result-count">{{ kardex().length }} movimiento(s)</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Medicamento</th>
+                <th>DCI</th>
+                <th>Lote</th>
+                <th>Movimiento</th>
+                <th>Cantidad</th>
+                <th>Stock anterior</th>
+                <th>Stock posterior</th>
+                <th>Referencia</th>
+                <th>Usuario</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (item of kardex(); track item.id) {
+                <tr>
+                  <td>{{ item.id }}</td>
+                  <td>
+                    <strong class="medicine-name">{{ item.medicamentoNombre }}</strong>
+                  </td>
+                  <td>{{ item.dciNombre }}</td>
+                  <td>{{ item.numeroLote }}</td>
+                  <td>
+                    <span class="status-pill movement">{{ item.tipoMovimiento }}</span>
+                  </td>
+                  <td>{{ item.cantidad }}</td>
+                  <td>{{ item.stockAnterior }}</td>
+                  <td>
+                    <strong class="stock-available">{{ item.stockPosterior }}</strong>
+                  </td>
+                  <td>
+                    {{ item.referenciaTipo }}
+                    <small>ID: {{ item.referenciaId }}</small>
+                  </td>
+                  <td>{{ item.usuarioResponsable }}</td>
+                  <td>{{ item.fechaMovimiento }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
+
+  @if (activeTab() === 'alertas') {
     <section class="inventory-panel">
       <div class="panel-header">
         <div>
-          <p>Inventario real por lote</p>
-          <h3>Stock farmacéutico</h3>
+          <p>Control preventivo</p>
+          <h3>Alertas de inventario</h3>
         </div>
 
-        <span class="result-count">{{ totalLotes() }} lote(s)</span>
+        <span class="result-count">
+          {{ lotesStockBajo() + lotesPorVencer() + lotesVencidos() }} alerta(s)
+        </span>
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Medicamento</th>
-              <th>DCI</th>
-              <th>Registro sanitario</th>
-              <th>Lote</th>
-              <th>Vencimiento</th>
-              <th>Estado</th>
-              <th>Stock actual</th>
-              <th>Comprometido</th>
-              <th>Disponible</th>
-              <th>Mínimo</th>
-              <th>Proveedor</th>
-              <th>Ubicación</th>
-            </tr>
-          </thead>
+      <div class="alerts-grid">
+        <article>
+          <span>Stock bajo</span>
+          <strong>{{ lotesStockBajo() }}</strong>
+          <p>Lotes con stock disponible menor o igual al mínimo.</p>
+        </article>
 
-          <tbody>
-            @for (item of stocks(); track item.inventarioLoteId) {
-              <tr [class.low-stock]="item.alertaStockBajo" [class.expired]="item.vencido">
-                <td>
-                  <strong class="medicine-name">{{ item.medicamentoNombre }}</strong>
-                </td>
-                <td>{{ item.dciNombre }}</td>
-                <td>{{ item.registroSanitario }}</td>
-                <td>{{ item.numeroLote }}</td>
-                <td>
-                  {{ item.fechaVencimiento }}
-                  <small>{{ item.diasParaVencer }} día(s)</small>
-                </td>
-                <td>
-                  <span class="status-pill"
-                        [class.warning]="item.alertaVencimiento"
-                        [class.danger]="item.vencido">
-                    {{ item.estadoVencimiento }}
-                  </span>
-                </td>
-                <td>{{ item.stockActual }}</td>
-                <td>{{ item.stockComprometido }}</td>
-                <td>
-                  <strong class="stock-available">{{ item.stockDisponible }}</strong>
-                </td>
-                <td>{{ item.stockMinimo }}</td>
-                <td>{{ item.proveedorNombre }}</td>
-                <td>{{ item.ubicacionFisica }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <article>
+          <span>Por vencer</span>
+          <strong>{{ lotesPorVencer() }}</strong>
+          <p>Lotes próximos a vencer según regla del backend.</p>
+        </article>
+
+        <article>
+          <span>Vencidos</span>
+          <strong>{{ lotesVencidos() }}</strong>
+          <p>Lotes que ya superaron su fecha de vencimiento.</p>
+        </article>
+      </div>
+
+      <div class="alert-list">
+        <h4>Lotes con stock bajo</h4>
+
+        @if (alertasStockBajo().length === 0) {
+          <p class="empty-message">No hay alertas de stock bajo.</p>
+        } @else {
+          @for (item of alertasStockBajo(); track item.inventarioLoteId) {
+            <div class="alert-item">
+              <strong>{{ item.medicamentoNombre }}</strong>
+              <span>{{ item.numeroLote }}</span>
+              <p>Disponible: {{ item.stockDisponible }} / Mínimo: {{ item.stockMinimo }}</p>
+            </div>
+          }
+        }
       </div>
     </section>
   }
