@@ -1,12 +1,12 @@
 <section class="page">
   <div class="page-header">
     <div>
-      <p>Módulo inicial</p>
-      <h2>Almacén / Logística farmacéutica</h2>
+      <p>MÃ³dulo inicial</p>
+      <h2>AlmacÃ©n / LogÃ­stica farmacÃ©utica</h2>
       <span>FEFO + lotes + Kardex</span>
     </div>
 
-    <button type="button" (click)="loadAll()">Actualizar información</button>
+    <button type="button" (click)="loadAll()">Actualizar informaciÃ³n</button>
   </div>
 
   <div class="summary-grid">
@@ -25,16 +25,169 @@
     <article>
       <span>Stock bajo</span>
       <strong>{{ lotesStockBajo() }}</strong>
-      <p>Lotes con alerta de stock mínimo.</p>
+      <p>Lotes con alerta de stock mÃ­nimo.</p>
     </article>
 
     <article>
       <span>Kardex</span>
       <strong>{{ kardex().length }}</strong>
-      <p>Movimientos logísticos registrados.</p>
+      <p>Movimientos logÃ­sticos registrados.</p>
     </article>
   </div>
 
+  <section class="operation-actions">
+    <div>
+      <p>Operaciones logísticas</p>
+      <h3>Ingreso y salida de stock</h3>
+      <span>Vista previa sin afectar inventario real</span>
+    </div>
+
+    <div class="operation-buttons">
+      <button type="button" (click)="openOperation('ingreso')">
+        Nuevo ingreso visual
+      </button>
+
+      <button type="button" (click)="openOperation('salida')">
+        Nueva salida FEFO visual
+      </button>
+    </div>
+  </section>
+
+  @if (activeOperation() === 'ingreso') {
+    <section class="operation-form">
+      <div class="panel-header">
+        <div>
+          <p>Formulario visual</p>
+          <h3>Ingreso de stock</h3>
+        </div>
+
+        <button type="button" class="clear-button" (click)="closeOperation()">Cerrar</button>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          Medicamento
+          <select [value]="ingresoMedicamentoId()" (change)="setIngresoMedicamentoId($any($event.target).value)">
+            <option value="">Seleccione medicamento</option>
+            @for (item of medicineOptions(); track item.medicamentoId) {
+              <option [value]="item.medicamentoId">{{ item.medicamentoNombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Número de lote
+          <input type="text" placeholder="Ej. LOTE-IBU-2028-001" [value]="ingresoLote()" (input)="setIngresoLote($any($event.target).value)" />
+        </label>
+
+        <label>
+          Fecha de vencimiento
+          <input type="date" [value]="ingresoVencimiento()" (input)="setIngresoVencimiento($any($event.target).value)" />
+        </label>
+
+        <label>
+          Cantidad
+          <input type="number" min="1" placeholder="Ej. 100" [value]="ingresoCantidad()" (input)="setIngresoCantidad($any($event.target).value)" />
+        </label>
+
+        <label>
+          Proveedor
+          <input type="text" placeholder="Proveedor de ingreso" [value]="ingresoProveedor()" (input)="setIngresoProveedor($any($event.target).value)" />
+        </label>
+
+        <label>
+          Usuario responsable
+          <input type="text" [value]="ingresoUsuario()" (input)="setIngresoUsuario($any($event.target).value)" />
+        </label>
+      </div>
+
+      <label class="full-field">
+        Motivo
+        <textarea rows="3" [value]="ingresoMotivo()" (input)="setIngresoMotivo($any($event.target).value)"></textarea>
+      </label>
+
+      <div class="preview-card">
+        <span>Vista previa</span>
+        <strong>Ingreso proveedor</strong>
+        <p>Medicamento: {{ selectedIngresoMedicineName() }}</p>
+        <p>Lote: {{ ingresoLote() || 'Pendiente' }}</p>
+        <p>Cantidad: {{ ingresoCantidad() || '0' }}</p>
+        <p class="preview-note">Este formulario todavía no ejecuta POST ni modifica stock.</p>
+      </div>
+    </section>
+  }
+
+  @if (activeOperation() === 'salida') {
+    <section class="operation-form">
+      <div class="panel-header">
+        <div>
+          <p>Formulario visual</p>
+          <h3>Salida de stock FEFO</h3>
+        </div>
+
+        <button type="button" class="clear-button" (click)="closeOperation()">Cerrar</button>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          Medicamento
+          <select [value]="salidaMedicamentoId()" (change)="setSalidaMedicamentoId($any($event.target).value)">
+            <option value="">Seleccione medicamento</option>
+            @for (item of medicineOptions(); track item.medicamentoId) {
+              <option [value]="item.medicamentoId">{{ item.medicamentoNombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Cantidad solicitada
+          <input type="number" min="1" placeholder="Ej. 10" [value]="salidaCantidad()" (input)="setSalidaCantidad($any($event.target).value)" />
+        </label>
+
+        <label>
+          Tipo de movimiento
+          <select [value]="salidaTipoMovimiento()" (change)="setSalidaTipoMovimiento($any($event.target).value)">
+            <option value="ENTREGA_INTERNA">ENTREGA_INTERNA</option>
+            <option value="VENTA_FARMACIA">VENTA_FARMACIA</option>
+            <option value="USO_INSUMO_MEDICO">USO_INSUMO_MEDICO</option>
+            <option value="MERMA">MERMA</option>
+            <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+            <option value="AJUSTE_AUTORIZADO">AJUSTE_AUTORIZADO</option>
+          </select>
+        </label>
+
+        <label>
+          Usuario responsable
+          <input type="text" [value]="salidaUsuario()" (input)="setSalidaUsuario($any($event.target).value)" />
+        </label>
+      </div>
+
+      <label class="full-field">
+        Motivo
+        <textarea rows="3" [value]="salidaMotivo()" (input)="setSalidaMotivo($any($event.target).value)"></textarea>
+      </label>
+
+      <div class="preview-card" [class.preview-danger]="salidaStockInsuficiente()">
+        <span>Vista previa FEFO</span>
+        <strong>{{ selectedSalidaMedicineName() }}</strong>
+        <p>Stock disponible total: {{ selectedSalidaStockDisponible() }}</p>
+        <p>Cantidad solicitada: {{ salidaCantidad() || '0' }}</p>
+
+        @if (selectedSalidaLots().length > 0) {
+          <p>Primer lote FEFO sugerido: {{ selectedSalidaLots()[0].numeroLote }}</p>
+          <p>Vencimiento: {{ selectedSalidaLots()[0].fechaVencimiento }}</p>
+        } @else {
+          <p>No hay lote disponible seleccionado.</p>
+        }
+
+        @if (salidaStockInsuficiente()) {
+          <p class="preview-note danger">Stock insuficiente para la cantidad solicitada.</p>
+        } @else {
+          <p class="preview-note">Este formulario todavía no ejecuta POST ni modifica stock.</p>
+        }
+      </div>
+    </section>
+  }
   <div class="tabs">
     <button type="button"
             [class.active]="activeTab() === 'inventario'"
@@ -72,7 +225,7 @@
         <div class="panel-header">
           <div>
             <p>Inventario real por lote</p>
-            <h3>Stock farmacéutico</h3>
+            <h3>Stock farmacÃ©utico</h3>
           </div>
 
           <span class="result-count">
@@ -85,7 +238,7 @@
             Buscar inventario
             <input
               type="text"
-              placeholder="Medicamento, DCI, lote, proveedor, ubicación..."
+              placeholder="Medicamento, DCI, lote, proveedor, ubicaciÃ³n..."
               [value]="stockSearch()"
               (input)="setStockSearch($any($event.target).value)"
             />
@@ -139,9 +292,9 @@
                 <th>Stock actual</th>
                 <th>Comprometido</th>
                 <th>Disponible</th>
-                <th>Mínimo</th>
+                <th>MÃ­nimo</th>
                 <th>Proveedor</th>
-                <th>Ubicación</th>
+                <th>UbicaciÃ³n</th>
               </tr>
             </thead>
 
@@ -156,7 +309,7 @@
                   <td>{{ item.numeroLote }}</td>
                   <td>
                     {{ item.fechaVencimiento }}
-                    <small>{{ item.diasParaVencer }} día(s)</small>
+                    <small>{{ item.diasParaVencer }} dÃ­a(s)</small>
                   </td>
                   <td>
                     <span class="status-pill"
@@ -192,7 +345,7 @@
     @if (loadingKardex()) {
       <div class="state-card">
         <strong>Cargando Kardex...</strong>
-        <p>Consultando movimientos logísticos desde el backend.</p>
+        <p>Consultando movimientos logÃ­sticos desde el backend.</p>
       </div>
     } @else if (kardexErrorMessage()) {
       <div class="state-card error">
@@ -204,7 +357,7 @@
       <section class="inventory-panel">
         <div class="panel-header">
           <div>
-            <p>Auditoría logística</p>
+            <p>AuditorÃ­a logÃ­stica</p>
             <h3>Kardex de inventario</h3>
           </div>
 
@@ -314,13 +467,13 @@
         <article>
           <span>Stock bajo</span>
           <strong>{{ lotesStockBajo() }}</strong>
-          <p>Lotes con stock disponible menor o igual al mínimo.</p>
+          <p>Lotes con stock disponible menor o igual al mÃ­nimo.</p>
         </article>
 
         <article>
           <span>Por vencer</span>
           <strong>{{ lotesPorVencer() }}</strong>
-          <p>Lotes próximos a vencer según regla del backend.</p>
+          <p>Lotes prÃ³ximos a vencer segÃºn regla del backend.</p>
         </article>
 
         <article>
@@ -340,7 +493,7 @@
             <div class="alert-item">
               <strong>{{ item.medicamentoNombre }}</strong>
               <span>{{ item.numeroLote }}</span>
-              <p>Disponible: {{ item.stockDisponible }} / Mínimo: {{ item.stockMinimo }}</p>
+              <p>Disponible: {{ item.stockDisponible }} / MÃ­nimo: {{ item.stockMinimo }}</p>
             </div>
           }
         }

@@ -346,3 +346,154 @@ tr.expired {
     grid-template-columns: 1fr;
   }
 }
+.operation-actions,
+.operation-form,
+.preview-card {
+  border-radius: 26px;
+  background: white;
+  border: 1px solid #c7e8fb;
+  box-shadow: 0 16px 42px rgba(0, 54, 96, 0.08);
+}
+
+.operation-actions {
+  padding: 24px;
+  margin-bottom: 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #ffffff, #eefaff);
+}
+
+.operation-actions p {
+  margin: 0 0 8px;
+  color: #0078ad;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.operation-actions h3 {
+  margin: 0;
+  color: #0a2744;
+  font-size: 28px;
+}
+
+.operation-actions span {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #e4f8ff;
+  color: #0078ad;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.operation-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.operation-form {
+  padding: 26px;
+  margin-bottom: 22px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.form-grid label,
+.full-field {
+  display: grid;
+  gap: 8px;
+  color: #123a5c;
+  font-weight: 900;
+}
+
+.full-field {
+  margin-top: 16px;
+}
+
+.form-grid input,
+.form-grid select,
+.full-field textarea {
+  width: 100%;
+  border: 1px solid #bfe4f7;
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: #0a2744;
+  background: #f8fdff;
+  outline: none;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.full-field textarea:focus {
+  border-color: #009bd1;
+  box-shadow: 0 0 0 4px rgba(0, 155, 209, 0.12);
+}
+
+.preview-card {
+  margin-top: 18px;
+  padding: 20px;
+  box-shadow: none;
+  background: #f8fdff;
+}
+
+.preview-card span {
+  display: inline-flex;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #e4f8ff;
+  color: #0078ad;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.preview-card strong {
+  display: block;
+  margin-top: 12px;
+  color: #073b63;
+  font-size: 22px;
+}
+
+.preview-card p {
+  margin: 8px 0 0;
+  color: #52718e;
+}
+
+.preview-note {
+  font-weight: 900;
+}
+
+.preview-card.preview-danger {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.preview-note.danger {
+  color: #b91c1c;
+}
+
+@media (max-width: 1100px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .operation-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 720px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
