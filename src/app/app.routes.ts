@@ -30,6 +30,11 @@ export const routes: Routes = [
         path: 'almacen',
         loadComponent: () =>
           import('./modules/almacen/home/almacen-home').then((m) => m.AlmacenHomeComponent)
+      },
+      {
+        path: 'catalogo-dci',
+        loadComponent: () =>
+          import('./modules/dci-catalog/home/dci-catalog-home').then((m) => m.DciCatalogHomeComponent)
       }
     ]
   },

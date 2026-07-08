@@ -1,0 +1,133 @@
+<section class="dci-page">
+  <header class="dci-hero">
+    <div>
+      <p class="eyebrow">Catálogo maestro farmacéutico</p>
+      <h1>Denominación Común Internacional - DCI</h1>
+      <p class="hero-description">
+        Consulta centralizada de principios activos, independientes del stock físico.
+        Un DCI puede existir aunque no tenga medicamento comercial o inventario disponible.
+      </p>
+    </div>
+
+    <button type="button" class="refresh-button" (click)="loadDciStockSummary()" [disabled]="isLoading()">
+      {{ isLoading() ? 'Actualizando...' : 'Actualizar' }}
+    </button>
+  </header>
+
+  <section class="summary-grid">
+    <article class="summary-card">
+      <span>Total DCI</span>
+      <strong>{{ totalDci() }}</strong>
+      <small>Principios activos registrados</small>
+    </article>
+
+    <article class="summary-card success">
+      <span>Con stock</span>
+      <strong>{{ totalDciConStock() }}</strong>
+      <small>DCI con inventario disponible</small>
+    </article>
+
+    <article class="summary-card warning">
+      <span>Sin stock</span>
+      <strong>{{ totalDciSinStock() }}</strong>
+      <small>DCI visibles con stock 0</small>
+    </article>
+
+    <article class="summary-card info">
+      <span>Stock total</span>
+      <strong>{{ stockTotalCatalogo() | number:'1.0-2' }}</strong>
+      <small>Unidades disponibles consolidadas</small>
+    </article>
+  </section>
+
+  <section class="toolbar">
+    <label>
+      Buscar DCI
+      <input
+        type="text"
+        placeholder="Buscar por DCI o descripción..."
+        [value]="searchText()"
+        (input)="updateSearchText($any($event.target).value)"
+      />
+    </label>
+
+    @if (searchText()) {
+      <button type="button" class="clear-button" (click)="clearSearch()">Limpiar búsqueda</button>
+    }
+  </section>
+
+  @if (errorMessage()) {
+    <div class="alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <section class="dci-table-card">
+    <div class="table-header">
+      <div>
+        <h2>Listado maestro DCI</h2>
+        <p>
+          Se muestran DCI activos, incluyendo aquellos sin medicamento comercial y sin stock.
+        </p>
+      </div>
+
+      <span>{{ filteredDciItems().length }} resultado(s)</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>DCI</th>
+            <th>Descripción</th>
+            <th>Medicamentos comerciales</th>
+            <th>Lotes activos</th>
+            <th>Stock total</th>
+            <th>Estado stock</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of filteredDciItems(); track item.dciId) {
+            <tr>
+              <td>
+                <strong>{{ item.nombreGenerico }}</strong>
+                <small>ID DCI: {{ item.dciId }}</small>
+              </td>
+
+              <td>{{ item.descripcion || 'Sin descripción registrada' }}</td>
+
+              <td>
+                <span class="number-pill">
+                  {{ item.totalMedicamentosComerciales }}
+                </span>
+              </td>
+
+              <td>
+                <span class="number-pill">
+                  {{ item.totalLotesActivos }}
+                </span>
+              </td>
+
+              <td>
+                <strong>{{ item.stockTotalDisponible | number:'1.0-2' }}</strong>
+              </td>
+
+              <td>
+                <span class="status-pill" [class.status-success]="stockStatus(item) === 'con-stock'" [class.status-empty]="stockStatus(item) === 'sin-stock'">
+                  {{ stockStatusLabel(item) }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-state">
+                No se encontraron DCI con los filtros aplicados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
