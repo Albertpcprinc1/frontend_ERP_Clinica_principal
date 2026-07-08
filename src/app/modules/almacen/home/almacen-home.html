@@ -1,29 +1,114 @@
 <section class="page">
   <div class="page-header">
-    <p>Módulo inicial</p>
-    <h2>Almacén / Logística farmacéutica</h2>
-    <span>FEFO + lotes + Kardex</span>
+    <div>
+      <p>Módulo inicial</p>
+      <h2>Almacén / Logística farmacéutica</h2>
+      <span>FEFO + lotes + Kardex</span>
+    </div>
+
+    <button type="button" (click)="loadStocks()">Actualizar inventario</button>
   </div>
 
-  <div class="module-grid">
-    <article>
-      <h3>Medicamentos</h3>
-      <p>Gestión de DCI, medicamentos comerciales, presentaciones y registros sanitarios.</p>
-    </article>
+  @if (loading()) {
+    <div class="state-card">
+      <strong>Cargando inventario...</strong>
+      <p>Consultando lotes desde el backend.</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="state-card error">
+      <strong>Backend no disponible</strong>
+      <p>{{ errorMessage() }}</p>
+      <button type="button" (click)="loadStocks()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="summary-grid">
+      <article>
+        <span>Lotes activos</span>
+        <strong>{{ totalLotes() }}</strong>
+        <p>Total de lotes registrados.</p>
+      </article>
 
-    <article>
-      <h3>Lotes e inventario</h3>
-      <p>Control de stock por lote, vencimiento, ubicación física y stock mínimo.</p>
-    </article>
+      <article>
+        <span>Stock disponible</span>
+        <strong>{{ stockTotalDisponible() }}</strong>
+        <p>Stock disponible total.</p>
+      </article>
 
-    <article>
-      <h3>Kardex</h3>
-      <p>Movimientos inalterables de ingreso, salida y ajustes autorizados.</p>
-    </article>
+      <article>
+        <span>Stock bajo</span>
+        <strong>{{ lotesStockBajo() }}</strong>
+        <p>Lotes con alerta de stock mínimo.</p>
+      </article>
 
-    <article>
-      <h3>Alertas</h3>
-      <p>Stock bajo, lotes agotados, vencidos y próximos a vencer.</p>
-    </article>
-  </div>
+      <article>
+        <span>Por vencer</span>
+        <strong>{{ lotesPorVencer() }}</strong>
+        <p>Lotes próximos a vencer.</p>
+      </article>
+    </div>
+
+    <section class="inventory-panel">
+      <div class="panel-header">
+        <div>
+          <p>Inventario real por lote</p>
+          <h3>Stock farmacéutico</h3>
+        </div>
+
+        <span class="result-count">{{ totalLotes() }} lote(s)</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Medicamento</th>
+              <th>DCI</th>
+              <th>Registro sanitario</th>
+              <th>Lote</th>
+              <th>Vencimiento</th>
+              <th>Estado</th>
+              <th>Stock actual</th>
+              <th>Comprometido</th>
+              <th>Disponible</th>
+              <th>Mínimo</th>
+              <th>Proveedor</th>
+              <th>Ubicación</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (item of stocks(); track item.inventarioLoteId) {
+              <tr [class.low-stock]="item.alertaStockBajo" [class.expired]="item.vencido">
+                <td>
+                  <strong class="medicine-name">{{ item.medicamentoNombre }}</strong>
+                </td>
+                <td>{{ item.dciNombre }}</td>
+                <td>{{ item.registroSanitario }}</td>
+                <td>{{ item.numeroLote }}</td>
+                <td>
+                  {{ item.fechaVencimiento }}
+                  <small>{{ item.diasParaVencer }} día(s)</small>
+                </td>
+                <td>
+                  <span class="status-pill"
+                        [class.warning]="item.alertaVencimiento"
+                        [class.danger]="item.vencido">
+                    {{ item.estadoVencimiento }}
+                  </span>
+                </td>
+                <td>{{ item.stockActual }}</td>
+                <td>{{ item.stockComprometido }}</td>
+                <td>
+                  <strong class="stock-available">{{ item.stockDisponible }}</strong>
+                </td>
+                <td>{{ item.stockMinimo }}</td>
+                <td>{{ item.proveedorNombre }}</td>
+                <td>{{ item.ubicacionFisica }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
 </section>
