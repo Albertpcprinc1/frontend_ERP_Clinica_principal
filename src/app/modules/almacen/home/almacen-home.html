@@ -125,9 +125,9 @@
         <button
           type="button"
           class="success-action"
-          [disabled]="submittingIngreso()"
-          (click)="ejecutarIngresoReal()">
-          {{ submittingIngreso() ? 'Registrando...' : 'Ejecutar ingreso real' }}
+          [disabled]="submittingIngreso() || ingresoOperationExecuted()"
+          (click)="openIngresoRealConfirmation()">
+          {{ ingresoOperationExecuted() ? 'Ingreso registrado' : (submittingIngreso() ? 'Registrando...' : 'Ejecutar ingreso real') }}
         </button>
       </div>
 
@@ -237,9 +237,9 @@
         <button
           type="button"
           class="danger-action"
-          [disabled]="submittingSalida() || salidaStockInsuficiente()"
-          (click)="ejecutarSalidaReal()">
-          {{ submittingSalida() ? 'Registrando...' : 'Ejecutar salida real' }}
+          [disabled]="submittingSalida() || salidaStockInsuficiente() || salidaOperationExecuted()"
+          (click)="openSalidaRealConfirmation()">
+          {{ salidaOperationExecuted() ? 'Salida registrada' : (submittingSalida() ? 'Registrando...' : 'Ejecutar salida real') }}
         </button>
       </div>
 
@@ -589,5 +589,54 @@
         }
       </div>
     </section>
+  }
+
+
+  @if (realOperationConfirmation(); as modal) {
+    <div class="confirm-overlay">
+      <article class="confirm-modal" [class.confirm-success]="modal.accent === 'success'" [class.confirm-danger]="modal.accent === 'danger'">
+        <div class="confirm-icon">
+          @if (modal.accent === 'success') {
+            <span>+</span>
+          } @else {
+            <span>!</span>
+          }
+        </div>
+
+        <div class="confirm-content">
+          <p class="confirm-label">Confirmación requerida</p>
+          <h3>{{ modal.title }}</h3>
+          <p class="confirm-subtitle">{{ modal.subtitle }}</p>
+
+          <div class="confirm-details">
+            @for (detail of modal.details; track detail.label) {
+              <div>
+                <span>{{ detail.label }}</span>
+                <strong>{{ detail.value }}</strong>
+              </div>
+            }
+          </div>
+
+          <div class="confirm-warning">
+            {{ modal.warning }}
+          </div>
+
+          <div class="confirm-actions">
+            <button type="button" class="confirm-cancel" (click)="closeRealOperationConfirmation()">
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              class="confirm-primary"
+              [class.success-action]="modal.accent === 'success'"
+              [class.danger-action]="modal.accent === 'danger'"
+              (click)="confirmRealOperation()">
+              {{ modal.actionText }}
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
   }
 </section>

@@ -11,6 +11,21 @@ type AlmacenTab = 'inventario' | 'kardex' | 'alertas';
 type StockFilter = 'todos' | 'stockBajo' | 'porVencer' | 'vencidos';
 type OperationPanel = 'ingreso' | 'salida' | null;
 
+interface RealOperationConfirmationDetail {
+  label: string;
+  value: string;
+}
+
+interface RealOperationConfirmation {
+  operation: 'ingreso' | 'salida';
+  title: string;
+  subtitle: string;
+  warning: string;
+  actionText: string;
+  accent: 'success' | 'danger';
+  details: RealOperationConfirmationDetail[];
+}
+
 @Component({
   selector: 'app-almacen-home',
   imports: [],
@@ -48,6 +63,7 @@ export class AlmacenHomeComponent implements OnInit {
   ingresoSuccessMessage = signal('');
   ingresoErrorMessage = signal('');
   lastIngresoResult = signal<StockEntryResponse | null>(null);
+  ingresoOperationExecuted = signal(false);
 
   salidaMedicamentoId = signal('');
   salidaCantidad = signal('');
@@ -59,6 +75,9 @@ export class AlmacenHomeComponent implements OnInit {
   salidaSuccessMessage = signal('');
   salidaErrorMessage = signal('');
   lastSalidaResult = signal<StockOutputResponse | null>(null);
+  salidaOperationExecuted = signal(false);
+
+  realOperationConfirmation = signal<RealOperationConfirmation | null>(null);
 
   totalLotes = computed(() => this.stocks().length);
 
@@ -218,32 +237,156 @@ export class AlmacenHomeComponent implements OnInit {
     this.activeOperation.set(null);
   }
 
+  openIngresoRealConfirmation(): void {
+    const medicamentoId = Number(this.ingresoMedicamentoId());
+    const cantidad = Number(this.ingresoCantidad());
+    const numeroLote = this.ingresoLote().trim();
+    const fechaVencimiento = this.ingresoVencimiento();
+
+    this.ingresoErrorMessage.set('');
+
+    if (this.ingresoOperationExecuted()) {
+      this.ingresoErrorMessage.set('Este ingreso ya fue registrado. Modifique los datos para habilitar una nueva operación.');
+      return;
+    }
+
+    if (!medicamentoId) {
+      this.ingresoErrorMessage.set('Seleccione un medicamento antes de ejecutar el ingreso real.');
+      return;
+    }
+
+    if (!numeroLote) {
+      this.ingresoErrorMessage.set('Ingrese el número de lote.');
+      return;
+    }
+
+    if (!fechaVencimiento) {
+      this.ingresoErrorMessage.set('Ingrese la fecha de vencimiento.');
+      return;
+    }
+
+    if (!cantidad || cantidad <= 0) {
+      this.ingresoErrorMessage.set('Ingrese una cantidad mayor a cero.');
+      return;
+    }
+
+    this.realOperationConfirmation.set({
+      operation: 'ingreso',
+      accent: 'success',
+      title: 'Confirmar ingreso real de stock',
+      subtitle: 'Esta acción creará un lote real, actualizará inventario y generará Kardex.',
+      warning: 'Operación irreversible: después de confirmar, el movimiento quedará registrado en Kardex.',
+      actionText: 'Confirmar ingreso real',
+      details: [
+        { label: 'Medicamento', value: this.selectedIngresoMedicineName() },
+        { label: 'Lote', value: numeroLote },
+        { label: 'Cantidad', value: String(cantidad) },
+        { label: 'Vencimiento', value: fechaVencimiento },
+        { label: 'Usuario', value: this.ingresoUsuario() || 'No definido' }
+      ]
+    });
+  }
+
+  openSalidaRealConfirmation(): void {
+    const medicamentoId = Number(this.salidaMedicamentoId());
+    const cantidad = Number(this.salidaCantidad());
+
+    this.salidaErrorMessage.set('');
+
+    if (this.salidaOperationExecuted()) {
+      this.salidaErrorMessage.set('Esta salida ya fue registrada. Modifique los datos para habilitar una nueva operación.');
+      return;
+    }
+
+    if (!medicamentoId) {
+      this.salidaErrorMessage.set('Seleccione un medicamento antes de ejecutar la salida real.');
+      return;
+    }
+
+    if (!cantidad || cantidad <= 0) {
+      this.salidaErrorMessage.set('Ingrese una cantidad mayor a cero.');
+      return;
+    }
+
+    if (this.salidaStockInsuficiente()) {
+      this.salidaErrorMessage.set('No se puede ejecutar la salida porque el stock disponible es insuficiente.');
+      return;
+    }
+
+    this.realOperationConfirmation.set({
+      operation: 'salida',
+      accent: 'danger',
+      title: 'Confirmar salida FEFO real',
+      subtitle: 'Esta acción descontará stock real aplicando FEFO y generará Kardex.',
+      warning: 'Operación irreversible: después de confirmar, el stock será descontado y el movimiento quedará auditado.',
+      actionText: 'Confirmar salida real',
+      details: [
+        { label: 'Medicamento', value: this.selectedSalidaMedicineName() },
+        { label: 'Cantidad', value: String(cantidad) },
+        { label: 'Tipo', value: this.salidaTipoMovimiento() },
+        { label: 'Stock disponible', value: String(this.selectedSalidaStockDisponible()) },
+        { label: 'Primer lote FEFO', value: this.selectedSalidaLots()[0]?.numeroLote ?? 'No definido' },
+        { label: 'Usuario', value: this.salidaUsuario() || 'No definido' }
+      ]
+    });
+  }
+
+  closeRealOperationConfirmation(): void {
+    this.realOperationConfirmation.set(null);
+  }
+
+  confirmRealOperation(): void {
+    const confirmation = this.realOperationConfirmation();
+
+    if (!confirmation) {
+      return;
+    }
+
+    this.closeRealOperationConfirmation();
+
+    if (confirmation.operation === 'ingreso') {
+      this.ejecutarIngresoReal();
+      return;
+    }
+
+    if (confirmation.operation === 'salida') {
+      this.ejecutarSalidaReal();
+    }
+  }
+
   setIngresoMedicamentoId(value: string): void {
     this.ingresoMedicamentoId.set(value);
+    this.resetIngresoOperationState();
   }
 
   setIngresoLote(value: string): void {
     this.ingresoLote.set(value);
+    this.resetIngresoOperationState();
   }
 
   setIngresoVencimiento(value: string): void {
     this.ingresoVencimiento.set(value);
+    this.resetIngresoOperationState();
   }
 
   setIngresoCantidad(value: string): void {
     this.ingresoCantidad.set(value);
+    this.resetIngresoOperationState();
   }
 
   setIngresoProveedor(value: string): void {
     this.ingresoProveedor.set(value);
+    this.resetIngresoOperationState();
   }
 
   setIngresoMotivo(value: string): void {
     this.ingresoMotivo.set(value);
+    this.resetIngresoOperationState();
   }
 
   setIngresoUsuario(value: string): void {
     this.ingresoUsuario.set(value);
+    this.resetIngresoOperationState();
   }
 
   ejecutarIngresoReal(): void {
@@ -276,14 +419,7 @@ export class AlmacenHomeComponent implements OnInit {
       this.ingresoErrorMessage.set('Ingrese una cantidad mayor a cero.');
       return;
     }
-
-    const confirmado = window.confirm(
-      `Esta acción registrará stock real y generará Kardex.\n\nMedicamento: ${this.selectedIngresoMedicineName()}\nLote: ${numeroLote}\nCantidad: ${cantidad}\nVencimiento: ${fechaVencimiento}\n\n¿Desea continuar?`
-    );
-
-    if (!confirmado) {
-      return;
-    }
+    this.closeRealOperationConfirmation();
 
     const timestamp = Date.now();
 
@@ -307,6 +443,7 @@ export class AlmacenHomeComponent implements OnInit {
       next: (response) => {
         this.lastIngresoResult.set(response);
         this.ingresoSuccessMessage.set('Ingreso real registrado correctamente. Inventario y Kardex actualizados.');
+        this.ingresoOperationExecuted.set(true);
         this.submittingIngreso.set(false);
         this.loadAll();
       },
@@ -320,22 +457,27 @@ export class AlmacenHomeComponent implements OnInit {
 
   setSalidaMedicamentoId(value: string): void {
     this.salidaMedicamentoId.set(value);
+    this.resetSalidaOperationState();
   }
 
   setSalidaCantidad(value: string): void {
     this.salidaCantidad.set(value);
+    this.resetSalidaOperationState();
   }
 
   setSalidaTipoMovimiento(value: string): void {
     this.salidaTipoMovimiento.set(value);
+    this.resetSalidaOperationState();
   }
 
   setSalidaMotivo(value: string): void {
     this.salidaMotivo.set(value);
+    this.resetSalidaOperationState();
   }
 
   setSalidaUsuario(value: string): void {
     this.salidaUsuario.set(value);
+    this.resetSalidaOperationState();
   }
 
   ejecutarSalidaReal(): void {
@@ -360,14 +502,7 @@ export class AlmacenHomeComponent implements OnInit {
       this.salidaErrorMessage.set('No se puede ejecutar la salida porque el stock disponible es insuficiente.');
       return;
     }
-
-    const confirmado = window.confirm(
-      `Esta acción modificará stock real y generará Kardex.\n\nMedicamento: ${this.selectedSalidaMedicineName()}\nCantidad: ${cantidad}\nTipo: ${this.salidaTipoMovimiento()}\n\n¿Desea continuar?`
-    );
-
-    if (!confirmado) {
-      return;
-    }
+    this.closeRealOperationConfirmation();
 
     this.submittingSalida.set(true);
 
@@ -383,6 +518,7 @@ export class AlmacenHomeComponent implements OnInit {
       next: (response) => {
         this.lastSalidaResult.set(response);
         this.salidaSuccessMessage.set('Salida FEFO real registrada correctamente. Inventario y Kardex actualizados.');
+        this.salidaOperationExecuted.set(true);
         this.submittingSalida.set(false);
         this.loadAll();
       },
@@ -418,6 +554,28 @@ export class AlmacenHomeComponent implements OnInit {
   clearKardexFilters(): void {
     this.kardexSearch.set('');
     this.kardexMovementFilter.set('TODOS');
+  }
+
+  private resetIngresoOperationState(): void {
+    if (this.submittingIngreso()) {
+      return;
+    }
+
+    this.ingresoOperationExecuted.set(false);
+    this.ingresoSuccessMessage.set('');
+    this.ingresoErrorMessage.set('');
+    this.lastIngresoResult.set(null);
+  }
+
+  private resetSalidaOperationState(): void {
+    if (this.submittingSalida()) {
+      return;
+    }
+
+    this.salidaOperationExecuted.set(false);
+    this.salidaSuccessMessage.set('');
+    this.salidaErrorMessage.set('');
+    this.lastSalidaResult.set(null);
   }
 
   loadAll(): void {
