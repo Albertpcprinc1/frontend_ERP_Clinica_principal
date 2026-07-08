@@ -1,6 +1,7 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 
 import { KardexMovement } from '../models/kardex-movement.model';
+import { StockEntryResponse } from '../models/stock-entry.model';
 import { StockLot } from '../models/stock-lot.model';
 import { StockOutputResponse } from '../models/stock-output.model';
 import { InventoryKardexService } from '../services/inventory-kardex.service';
@@ -42,6 +43,11 @@ export class AlmacenHomeComponent implements OnInit {
   ingresoProveedor = signal('');
   ingresoMotivo = signal('Ingreso visual de prueba');
   ingresoUsuario = signal('asistente.logistico');
+
+  submittingIngreso = signal(false);
+  ingresoSuccessMessage = signal('');
+  ingresoErrorMessage = signal('');
+  lastIngresoResult = signal<StockEntryResponse | null>(null);
 
   salidaMedicamentoId = signal('');
   salidaCantidad = signal('');
@@ -91,6 +97,20 @@ export class AlmacenHomeComponent implements OnInit {
 
     return Array.from(map.values()).sort((a, b) =>
       a.medicamentoNombre.localeCompare(b.medicamentoNombre)
+    );
+  });
+
+  providerOptions = computed(() => {
+    const map = new Map<number, StockLot>();
+
+    for (const item of this.stocks()) {
+      if (item.proveedorId && !map.has(item.proveedorId)) {
+        map.set(item.proveedorId, item);
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) =>
+      a.proveedorNombre.localeCompare(b.proveedorNombre)
     );
   });
 
@@ -224,6 +244,78 @@ export class AlmacenHomeComponent implements OnInit {
 
   setIngresoUsuario(value: string): void {
     this.ingresoUsuario.set(value);
+  }
+
+  ejecutarIngresoReal(): void {
+    const medicamentoId = Number(this.ingresoMedicamentoId());
+    const cantidad = Number(this.ingresoCantidad());
+    const numeroLote = this.ingresoLote().trim();
+    const fechaVencimiento = this.ingresoVencimiento();
+    const proveedorId = this.providerOptions()[0]?.proveedorId ?? null;
+
+    this.ingresoSuccessMessage.set('');
+    this.ingresoErrorMessage.set('');
+    this.lastIngresoResult.set(null);
+
+    if (!medicamentoId) {
+      this.ingresoErrorMessage.set('Seleccione un medicamento antes de ejecutar el ingreso real.');
+      return;
+    }
+
+    if (!numeroLote) {
+      this.ingresoErrorMessage.set('Ingrese el número de lote.');
+      return;
+    }
+
+    if (!fechaVencimiento) {
+      this.ingresoErrorMessage.set('Ingrese la fecha de vencimiento.');
+      return;
+    }
+
+    if (!cantidad || cantidad <= 0) {
+      this.ingresoErrorMessage.set('Ingrese una cantidad mayor a cero.');
+      return;
+    }
+
+    const confirmado = window.confirm(
+      `Esta acción registrará stock real y generará Kardex.\n\nMedicamento: ${this.selectedIngresoMedicineName()}\nLote: ${numeroLote}\nCantidad: ${cantidad}\nVencimiento: ${fechaVencimiento}\n\n¿Desea continuar?`
+    );
+
+    if (!confirmado) {
+      return;
+    }
+
+    const timestamp = Date.now();
+
+    this.submittingIngreso.set(true);
+
+    this.stockService.createStockEntry({
+      medicamentoId,
+      proveedorId,
+      numeroLote,
+      fechaVencimiento,
+      fechaIngreso: new Date().toISOString().slice(0, 10),
+      documentoIngreso: `DOC-ANGULAR-${timestamp}`,
+      guiaRemision: `GUIA-ANGULAR-${timestamp}`,
+      ubicacionFisica: 'ALMACEN-A1-ESTANTE-03',
+      costoUnitario: 0,
+      stockMinimo: 10,
+      cantidad,
+      motivo: this.ingresoMotivo(),
+      usuarioResponsable: this.ingresoUsuario()
+    }).subscribe({
+      next: (response) => {
+        this.lastIngresoResult.set(response);
+        this.ingresoSuccessMessage.set('Ingreso real registrado correctamente. Inventario y Kardex actualizados.');
+        this.submittingIngreso.set(false);
+        this.loadAll();
+      },
+      error: (error) => {
+        const message = error?.error?.message || 'No se pudo registrar el ingreso real.';
+        this.ingresoErrorMessage.set(message);
+        this.submittingIngreso.set(false);
+      }
+    });
   }
 
   setSalidaMedicamentoId(value: string): void {

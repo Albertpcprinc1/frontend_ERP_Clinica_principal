@@ -112,8 +112,48 @@
         <p>Medicamento: {{ selectedIngresoMedicineName() }}</p>
         <p>Lote: {{ ingresoLote() || 'Pendiente' }}</p>
         <p>Cantidad: {{ ingresoCantidad() || '0' }}</p>
-        <p class="preview-note">Este formulario todavía no ejecuta POST ni modifica stock.</p>
+        <p class="preview-note">Al ejecutar, se registrará un nuevo lote, stock real y Kardex.</p>
       </div>
+
+      <div class="real-action-panel ingreso-action">
+        <div>
+          <span>Acción real controlada</span>
+          <strong>Registrar ingreso real</strong>
+          <p>Use primero un lote nuevo de prueba, por ejemplo LOTE-IBU-2029-001 con 20 unidades.</p>
+        </div>
+
+        <button
+          type="button"
+          class="success-action"
+          [disabled]="submittingIngreso()"
+          (click)="ejecutarIngresoReal()">
+          {{ submittingIngreso() ? 'Registrando...' : 'Ejecutar ingreso real' }}
+        </button>
+      </div>
+
+      @if (ingresoErrorMessage()) {
+        <div class="operation-message error">
+          {{ ingresoErrorMessage() }}
+        </div>
+      }
+
+      @if (ingresoSuccessMessage()) {
+        <div class="operation-message success">
+          {{ ingresoSuccessMessage() }}
+        </div>
+      }
+
+      @if (lastIngresoResult(); as result) {
+        <div class="result-card">
+          <span>Resultado backend</span>
+          <strong>Ingreso registrado</strong>
+          <p>Lote: {{ result.numeroLote }}</p>
+          <p>Cantidad ingresada: {{ result.cantidad }}</p>
+          <p>Stock disponible: {{ result.stockDisponible }}</p>
+          <p>Kardex ID: {{ result.kardexId }}</p>
+          <p>Tipo movimiento: {{ result.tipoMovimiento }}</p>
+        </div>
+      }
     </section>
   }
 

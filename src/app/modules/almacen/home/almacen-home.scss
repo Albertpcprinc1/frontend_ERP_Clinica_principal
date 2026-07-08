@@ -590,3 +590,13 @@ button.danger-action:disabled {
     align-items: flex-start;
   }
 }
+
+button.success-action {
+  background: linear-gradient(135deg, #16a34a, #047857);
+  border-color: #047857;
+}
+
+button.success-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
