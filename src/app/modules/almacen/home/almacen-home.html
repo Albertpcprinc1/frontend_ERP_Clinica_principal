@@ -1,12 +1,12 @@
 <section class="page">
   <div class="page-header">
     <div>
-      <p>MÃ³dulo inicial</p>
-      <h2>AlmacÃ©n / LogÃ­stica farmacÃ©utica</h2>
+      <p>Módulo inicial</p>
+      <h2>Almacén / Logística farmacéutica</h2>
       <span>FEFO + lotes + Kardex</span>
     </div>
 
-    <button type="button" (click)="loadAll()">Actualizar informaciÃ³n</button>
+    <button type="button" (click)="loadAll()">Actualizar información</button>
   </div>
 
   <div class="summary-grid">
@@ -25,13 +25,13 @@
     <article>
       <span>Stock bajo</span>
       <strong>{{ lotesStockBajo() }}</strong>
-      <p>Lotes con alerta de stock mÃ­nimo.</p>
+      <p>Lotes con alerta de stock mínimo.</p>
     </article>
 
     <article>
       <span>Kardex</span>
       <strong>{{ kardex().length }}</strong>
-      <p>Movimientos logÃ­sticos registrados.</p>
+      <p>Movimientos logísticos registrados.</p>
     </article>
   </div>
 
@@ -183,9 +183,59 @@
         @if (salidaStockInsuficiente()) {
           <p class="preview-note danger">Stock insuficiente para la cantidad solicitada.</p>
         } @else {
-          <p class="preview-note">Este formulario todavía no ejecuta POST ni modifica stock.</p>
+          <p class="preview-note">Al ejecutar, se modificará stock real y se generará Kardex.</p>
         }
       </div>
+
+      <div class="real-action-panel">
+        <div>
+          <span>Acción real controlada</span>
+          <strong>Registrar salida FEFO real</strong>
+          <p>Use primero una cantidad pequeña de prueba, por ejemplo 5 unidades.</p>
+        </div>
+
+        <button
+          type="button"
+          class="danger-action"
+          [disabled]="submittingSalida() || salidaStockInsuficiente()"
+          (click)="ejecutarSalidaReal()">
+          {{ submittingSalida() ? 'Registrando...' : 'Ejecutar salida real' }}
+        </button>
+      </div>
+
+      @if (salidaErrorMessage()) {
+        <div class="operation-message error">
+          {{ salidaErrorMessage() }}
+        </div>
+      }
+
+      @if (salidaSuccessMessage()) {
+        <div class="operation-message success">
+          {{ salidaSuccessMessage() }}
+        </div>
+      }
+
+      @if (lastSalidaResult(); as result) {
+        <div class="result-card">
+          <span>Resultado backend</span>
+          <strong>Salida registrada</strong>
+          <p>Cantidad solicitada: {{ result.cantidadSolicitada }}</p>
+          <p>Cantidad atendida: {{ result.cantidadAtendida }}</p>
+          <p>Tipo movimiento: {{ result.tipoMovimiento }}</p>
+
+          @if (result.lineas && result.lineas.length > 0) {
+            <div class="result-lines">
+              @for (linea of result.lineas; track linea.loteId) {
+                <div>
+                  <strong>{{ linea.numeroLote }}</strong>
+                  <p>Atendido: {{ linea.cantidadAtendida }}</p>
+                  <p>Stock: {{ linea.stockAnterior }} → {{ linea.stockPosterior }}</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
     </section>
   }
   <div class="tabs">
@@ -225,7 +275,7 @@
         <div class="panel-header">
           <div>
             <p>Inventario real por lote</p>
-            <h3>Stock farmacÃ©utico</h3>
+            <h3>Stock farmacéutico</h3>
           </div>
 
           <span class="result-count">
@@ -238,7 +288,7 @@
             Buscar inventario
             <input
               type="text"
-              placeholder="Medicamento, DCI, lote, proveedor, ubicaciÃ³n..."
+              placeholder="Medicamento, DCI, lote, proveedor, ubicación..."
               [value]="stockSearch()"
               (input)="setStockSearch($any($event.target).value)"
             />
@@ -292,9 +342,9 @@
                 <th>Stock actual</th>
                 <th>Comprometido</th>
                 <th>Disponible</th>
-                <th>MÃ­nimo</th>
+                <th>Mínimo</th>
                 <th>Proveedor</th>
-                <th>UbicaciÃ³n</th>
+                <th>Ubicación</th>
               </tr>
             </thead>
 
@@ -309,7 +359,7 @@
                   <td>{{ item.numeroLote }}</td>
                   <td>
                     {{ item.fechaVencimiento }}
-                    <small>{{ item.diasParaVencer }} dÃ­a(s)</small>
+                    <small>{{ item.diasParaVencer }} día(s)</small>
                   </td>
                   <td>
                     <span class="status-pill"
@@ -345,7 +395,7 @@
     @if (loadingKardex()) {
       <div class="state-card">
         <strong>Cargando Kardex...</strong>
-        <p>Consultando movimientos logÃ­sticos desde el backend.</p>
+        <p>Consultando movimientos logísticos desde el backend.</p>
       </div>
     } @else if (kardexErrorMessage()) {
       <div class="state-card error">
@@ -357,7 +407,7 @@
       <section class="inventory-panel">
         <div class="panel-header">
           <div>
-            <p>AuditorÃ­a logÃ­stica</p>
+            <p>Auditoría logística</p>
             <h3>Kardex de inventario</h3>
           </div>
 
@@ -467,13 +517,13 @@
         <article>
           <span>Stock bajo</span>
           <strong>{{ lotesStockBajo() }}</strong>
-          <p>Lotes con stock disponible menor o igual al mÃ­nimo.</p>
+          <p>Lotes con stock disponible menor o igual al mínimo.</p>
         </article>
 
         <article>
           <span>Por vencer</span>
           <strong>{{ lotesPorVencer() }}</strong>
-          <p>Lotes prÃ³ximos a vencer segÃºn regla del backend.</p>
+          <p>Lotes próximos a vencer según regla del backend.</p>
         </article>
 
         <article>
@@ -493,7 +543,7 @@
             <div class="alert-item">
               <strong>{{ item.medicamentoNombre }}</strong>
               <span>{{ item.numeroLote }}</span>
-              <p>Disponible: {{ item.stockDisponible }} / MÃ­nimo: {{ item.stockMinimo }}</p>
+              <p>Disponible: {{ item.stockDisponible }} / Mínimo: {{ item.stockMinimo }}</p>
             </div>
           }
         }

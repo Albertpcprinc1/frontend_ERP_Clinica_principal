@@ -2,6 +2,7 @@ import { Component, computed, OnInit, signal } from '@angular/core';
 
 import { KardexMovement } from '../models/kardex-movement.model';
 import { StockLot } from '../models/stock-lot.model';
+import { StockOutputResponse } from '../models/stock-output.model';
 import { InventoryKardexService } from '../services/inventory-kardex.service';
 import { InventoryStockService } from '../services/inventory-stock.service';
 
@@ -47,6 +48,11 @@ export class AlmacenHomeComponent implements OnInit {
   salidaTipoMovimiento = signal('ENTREGA_INTERNA');
   salidaMotivo = signal('Salida visual FEFO de prueba');
   salidaUsuario = signal('asistente.logistico');
+
+  submittingSalida = signal(false);
+  salidaSuccessMessage = signal('');
+  salidaErrorMessage = signal('');
+  lastSalidaResult = signal<StockOutputResponse | null>(null);
 
   totalLotes = computed(() => this.stocks().length);
 
@@ -238,6 +244,62 @@ export class AlmacenHomeComponent implements OnInit {
 
   setSalidaUsuario(value: string): void {
     this.salidaUsuario.set(value);
+  }
+
+  ejecutarSalidaReal(): void {
+    const medicamentoId = Number(this.salidaMedicamentoId());
+    const cantidad = Number(this.salidaCantidad());
+
+    this.salidaSuccessMessage.set('');
+    this.salidaErrorMessage.set('');
+    this.lastSalidaResult.set(null);
+
+    if (!medicamentoId) {
+      this.salidaErrorMessage.set('Seleccione un medicamento antes de ejecutar la salida real.');
+      return;
+    }
+
+    if (!cantidad || cantidad <= 0) {
+      this.salidaErrorMessage.set('Ingrese una cantidad mayor a cero.');
+      return;
+    }
+
+    if (this.salidaStockInsuficiente()) {
+      this.salidaErrorMessage.set('No se puede ejecutar la salida porque el stock disponible es insuficiente.');
+      return;
+    }
+
+    const confirmado = window.confirm(
+      `Esta acción modificará stock real y generará Kardex.\n\nMedicamento: ${this.selectedSalidaMedicineName()}\nCantidad: ${cantidad}\nTipo: ${this.salidaTipoMovimiento()}\n\n¿Desea continuar?`
+    );
+
+    if (!confirmado) {
+      return;
+    }
+
+    this.submittingSalida.set(true);
+
+    this.stockService.createStockOutput({
+      medicamentoId,
+      cantidad,
+      tipoMovimiento: this.salidaTipoMovimiento(),
+      referenciaTipo: 'SALIDA_FEFO_ANGULAR',
+      referenciaId: Date.now(),
+      motivo: this.salidaMotivo(),
+      usuarioResponsable: this.salidaUsuario()
+    }).subscribe({
+      next: (response) => {
+        this.lastSalidaResult.set(response);
+        this.salidaSuccessMessage.set('Salida FEFO real registrada correctamente. Inventario y Kardex actualizados.');
+        this.submittingSalida.set(false);
+        this.loadAll();
+      },
+      error: (error) => {
+        const message = error?.error?.message || 'No se pudo registrar la salida FEFO real.';
+        this.salidaErrorMessage.set(message);
+        this.submittingSalida.set(false);
+      }
+    });
   }
 
   setStockSearch(value: string): void {
