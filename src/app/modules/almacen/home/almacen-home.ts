@@ -87,7 +87,7 @@ export class AlmacenHomeComponent implements OnInit {
   salidaMedicamentoId = signal('');
   salidaCantidad = signal('');
   salidaTipoMovimiento = signal('ENTREGA_INTERNA');
-  salidaMotivo = signal('Salida visual FEFO de prueba');
+  salidaMotivo = signal('Salida FEFO por receta m\u00e9dica simulada');
   salidaUsuario = signal('asistente.logistico');
 
   submittingSalida = signal(false);
@@ -382,7 +382,7 @@ export class AlmacenHomeComponent implements OnInit {
     this.ingresoErrorMessage.set('');
 
     if (this.ingresoOperationExecuted()) {
-      this.ingresoErrorMessage.set('Este ingreso ya fue registrado. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.');
+      this.ingresoErrorMessage.set('Este ingreso ya fue registrado. Modifique los datos para habilitar una nueva operaci\u00f3n.');
       return;
     }
 
@@ -415,8 +415,8 @@ export class AlmacenHomeComponent implements OnInit {
       operation: 'ingreso',
       accent: 'success',
       title: 'Confirmar ingreso real de stock',
-      subtitle: 'Esta accion creara un lote real, actualizara inventario y generara Kardex.',
-      warning: 'Operacion irreversible: despues de confirmar, el movimiento quedara registrado en Kardex.',
+      subtitle: 'Esta acci\u00f3n crear\u00e1 un lote real, actualizar\u00e1 inventario y generar\u00e1 Kardex.',
+      warning: 'Operaci\u00f3n irreversible: despu\u00e9s de confirmar, el movimiento quedar\u00e1 registrado en Kardex.',
       actionText: 'Confirmar ingreso real',
       details: [
         { label: 'Medicamento', value: this.selectedIngresoMedicineName() },
@@ -437,7 +437,7 @@ export class AlmacenHomeComponent implements OnInit {
     this.salidaErrorMessage.set('');
 
     if (this.salidaOperationExecuted()) {
-      this.salidaErrorMessage.set('Esta salida ya fue registrada. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.');
+      this.salidaErrorMessage.set('Esta salida ya fue registrada. Modifique los datos para habilitar una nueva operaci\u00f3n.');
       return;
     }
 
@@ -460,8 +460,8 @@ export class AlmacenHomeComponent implements OnInit {
       operation: 'salida',
       accent: 'danger',
       title: 'Confirmar salida FEFO real',
-      subtitle: 'Esta accion descontara stock real aplicando FEFO y generara Kardex.',
-      warning: 'Operacion irreversible: despues de confirmar, el stock sera descontado y el movimiento quedara auditado.',
+      subtitle: 'Esta acci\u00f3n descontara stock real aplicando FEFO y generar\u00e1 Kardex.',
+      warning: 'Operaci\u00f3n irreversible: despu\u00e9s de confirmar, el stock ser\u00e1 descontado y el movimiento quedar\u00e1 auditado.',
       actionText: 'Confirmar salida real',
       details: [
         { label: 'Medicamento', value: this.selectedSalidaMedicineName() },
@@ -757,7 +757,7 @@ export class AlmacenHomeComponent implements OnInit {
         this.medicines.set(items ?? []);
       },
       error: () => {
-        this.medicineErrorMessage.set('No se pudo cargar el catÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡logo de medicamentos.');
+        this.medicineErrorMessage.set('No se pudo cargar el cat\u00e1logo de medicamentos.');
       }
     });
   }

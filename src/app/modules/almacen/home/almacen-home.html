@@ -1,12 +1,12 @@
 <section class="page">
   <div class="page-header">
     <div>
-      <p>Módulo inicial</p>
-      <h2>Almacén / Logística farmacéutica</h2>
+      <p>M&oacute;dulo inicial</p>
+      <h2>Almac&eacute;n / Log&iacute;stica farmac&eacute;utica</h2>
       <span>FEFO + lotes + Kardex</span>
     </div>
 
-    <button type="button" (click)="loadAll()">Actualizar información</button>
+    <button type="button" (click)="loadAll()">Actualizar informaci&oacute;n</button>
   </div>
 
   <div class="summary-grid">
@@ -25,19 +25,19 @@
     <article>
       <span>Stock bajo</span>
       <strong>{{ lotesStockBajo() }}</strong>
-      <p>Lotes con alerta de stock mínimo.</p>
+      <p>Lotes con alerta de stock m&iacute;nimo.</p>
     </article>
 
     <article>
       <span>Kardex</span>
       <strong>{{ kardex().length }}</strong>
-      <p>Movimientos logísticos registrados.</p>
+      <p>Movimientos log&iacute;sticos registrados.</p>
     </article>
   </div>
 
   <section class="operation-actions">
     <div>
-      <p>Operaciones logísticas</p>
+      <p>Operaciones log&iacute;sticas</p>
       <h3>Ingreso y salida de stock</h3>
       <span>Vista previa sin afectar inventario real</span>
     </div>
@@ -82,8 +82,8 @@
               <span>Medicamento seleccionado</span>
               <strong>{{ selectedIngresoMedicineName() }}</strong>
               <small>
-                Unidad base: {{ selectedIngresoUnidadBase() }} ·
-                Presentación: {{ selectedIngresoUnidadPresentacion() }} ·
+                Unidad base: {{ selectedIngresoUnidadBase() }} &middot;
+                Presentaci&oacute;n: {{ selectedIngresoUnidadPresentacion() }} &middot;
                 Factor sugerido/editable: {{ selectedIngresoFactorConversion() }}
               </small>
               <button type="button" (click)="clearIngresoMedicineSelection()">Cambiar</button>
@@ -96,7 +96,7 @@
                 <button type="button" (click)="selectIngresoMedicine(item)">
                   <strong>{{ item.medicamentoNombre }}</strong>
                   <span>DCI: {{ item.dciNombre || 'Sin DCI registrado' }}</span>
-                  <small>RS: {{ item.registroSanitario || 'No registrado' }} · Stock: {{ item.stockDisponible || 0 }}</small>
+                  <small>RS: {{ item.registroSanitario || 'No registrado' }} &middot; Stock: {{ item.stockDisponible || 0 }}</small>
                 </button>
               } @empty {
                 <p>No se encontraron medicamentos por nombre comercial o DCI.</p>
@@ -106,7 +106,7 @@
         </div>
 
         <label>
-          Número de lote
+          N&uacute;mero de lote
           <input type="text" placeholder="Ej. LOTE-IBU-2028-001" [value]="ingresoLote()" (input)="setIngresoLote($any($event.target).value)" />
         </label>
 
@@ -134,7 +134,7 @@
 
         @if (ingresoMedicamentoId()) {
           <div class="conversion-card">
-            <span>Cálculo automático de stock</span>
+            <span>C&aacute;lculo autom&aacute;tico de stock</span>
             <strong>{{ ingresoCantidadBaseCalculada() | number:'1.0-2' }} {{ selectedIngresoUnidadBase() }}</strong>
             <p>
               {{ ingresoCantidad() || '0' }} {{ selectedIngresoUnidadPresentacion() }}
@@ -166,14 +166,14 @@
         <p>Lote: {{ ingresoLote() || 'Pendiente' }}</p>
         <p>Cantidad ingresada: {{ ingresoCantidad() || '0' }} {{ selectedIngresoUnidadPresentacion() }}</p>
         <p>Stock calculado: {{ ingresoCantidadBaseCalculada() | number:'1.0-2' }} {{ selectedIngresoUnidadBase() }}</p>
-        <p class="preview-note">Al ejecutar, se registrará un nuevo lote, stock real y Kardex.</p>
+        <p class="preview-note">Al ejecutar, se modificar&aacute; stock real y se generar&aacute; Kardex.</p>
       </div>
 
       <div class="real-action-panel ingreso-action">
         <div>
-          <span>Acción real controlada</span>
+          <span>Acci&oacute;n real controlada</span>
           <strong>Registrar ingreso real</strong>
-          <p>Use primero un lote nuevo de prueba. El sistema calculará automáticamente el stock en unidad base.</p>
+          <p>Use primero un lote nuevo de prueba. El sistema calcular&aacute; autom&aacute;ticamente el stock en unidad base.</p>
         </div>
 
         <button
@@ -249,7 +249,7 @@
                 <button type="button" (click)="selectSalidaMedicine(item)">
                   <strong>{{ item.medicamentoNombre }}</strong>
                   <span>DCI: {{ item.dciNombre || 'Sin DCI registrado' }}</span>
-                  <small>RS: {{ item.registroSanitario || 'No registrado' }} · Stock disponible: {{ item.stockDisponible || 0 }}</small>
+                  <small>RS: {{ item.registroSanitario || 'No registrado' }} &middot; Stock disponible: {{ item.stockDisponible || 0 }}</small>
                 </button>
               } @empty {
                 <p>No se encontraron medicamentos por nombre comercial o DCI.</p>
@@ -267,6 +267,7 @@
           Tipo de movimiento
           <select [value]="salidaTipoMovimiento()" (change)="setSalidaTipoMovimiento($any($event.target).value)">
             <option value="ENTREGA_INTERNA">ENTREGA_INTERNA</option>
+            <option value="ENTREGA_POR_RECETA">ENTREGA_POR_RECETA</option>
             <option value="VENTA_FARMACIA">VENTA_FARMACIA</option>
             <option value="USO_INSUMO_MEDICO">USO_INSUMO_MEDICO</option>
             <option value="MERMA">MERMA</option>
@@ -302,15 +303,15 @@
         @if (salidaStockInsuficiente()) {
           <p class="preview-note danger">Stock insuficiente para la cantidad solicitada.</p>
         } @else {
-          <p class="preview-note">Al ejecutar, se modificará stock real y se generará Kardex.</p>
+          <p class="preview-note">Al ejecutar, se modificar&aacute; stock real y se generar&aacute; Kardex.</p>
         }
       </div>
 
       <div class="real-action-panel">
         <div>
-          <span>Acción real controlada</span>
+          <span>Acci&oacute;n real controlada</span>
           <strong>Registrar salida FEFO real</strong>
-          <p>Use primero una cantidad pequeña de prueba, por ejemplo 5 unidades.</p>
+          <p>Use primero una cantidad peque&ntilde;a de prueba, por ejemplo 5 unidades.</p>
         </div>
 
         <button
@@ -348,7 +349,7 @@
                 <div>
                   <strong>{{ linea.numeroLote }}</strong>
                   <p>Atendido: {{ linea.cantidadAtendida }}</p>
-                  <p>Stock: {{ linea.stockAnterior }} → {{ linea.stockPosterior }}</p>
+                  <p>Stock: {{ linea.stockAnterior }} Ã¢â€ â€™ {{ linea.stockPosterior }}</p>
                 </div>
               }
             </div>
@@ -394,7 +395,7 @@
         <div class="panel-header">
           <div>
             <p>Inventario real por lote</p>
-            <h3>Stock farmacéutico</h3>
+            <h3>Stock farmac&eacute;utico</h3>
           </div>
 
           <span class="result-count">
@@ -407,7 +408,7 @@
             Buscar inventario
             <input
               type="text"
-              placeholder="Medicamento, DCI, lote, proveedor, ubicación..."
+              placeholder="Medicamento, DCI, lote, proveedor, ubicaci&oacute;n..."
               [value]="stockSearch()"
               (input)="setStockSearch($any($event.target).value)"
             />
@@ -461,9 +462,9 @@
                 <th>Stock actual</th>
                 <th>Comprometido</th>
                 <th>Disponible</th>
-                <th>Mínimo</th>
+                <th>M&iacute;nimo</th>
                 <th>Proveedor</th>
-                <th>Ubicación</th>
+                <th>Ubicaci&oacute;n</th>
               </tr>
             </thead>
 
@@ -478,7 +479,7 @@
                   <td>{{ item.numeroLote }}</td>
                   <td>
                     {{ item.fechaVencimiento }}
-                    <small>{{ item.diasParaVencer }} día(s)</small>
+                    <small>{{ item.diasParaVencer }} d&iacute;a(s)</small>
                   </td>
                   <td>
                     <span class="status-pill"
@@ -514,7 +515,7 @@
     @if (loadingKardex()) {
       <div class="state-card">
         <strong>Cargando Kardex...</strong>
-        <p>Consultando movimientos logísticos desde el backend.</p>
+        <p>Consultando movimientos log&iacute;sticos desde el backend.</p>
       </div>
     } @else if (kardexErrorMessage()) {
       <div class="state-card error">
@@ -526,7 +527,7 @@
       <section class="inventory-panel">
         <div class="panel-header">
           <div>
-            <p>Auditoría logística</p>
+            <p>Auditor&iacute;a log&iacute;stica</p>
             <h3>Kardex de inventario</h3>
           </div>
 
@@ -636,13 +637,13 @@
         <article>
           <span>Stock bajo</span>
           <strong>{{ lotesStockBajo() }}</strong>
-          <p>Lotes con stock disponible menor o igual al mínimo.</p>
+          <p>Lotes con stock disponible menor o igual al m&iacute;nimo.</p>
         </article>
 
         <article>
           <span>Por vencer</span>
           <strong>{{ lotesPorVencer() }}</strong>
-          <p>Lotes próximos a vencer según regla del backend.</p>
+          <p>Lotes pr&oacute;ximos a vencer seg&uacute;n regla del backend.</p>
         </article>
 
         <article>
@@ -662,7 +663,7 @@
             <div class="alert-item">
               <strong>{{ item.medicamentoNombre }}</strong>
               <span>{{ item.numeroLote }}</span>
-              <p>Disponible: {{ item.stockDisponible }} / Mínimo: {{ item.stockMinimo }}</p>
+              <p>Disponible: {{ item.stockDisponible }} / M&iacute;nimo: {{ item.stockMinimo }}</p>
             </div>
           }
         }
@@ -683,7 +684,7 @@
         </div>
 
         <div class="confirm-content">
-          <p class="confirm-label">Confirmación requerida</p>
+          <p class="confirm-label">Confirmaci&oacute;n requerida</p>
           <h3>{{ modal.title }}</h3>
           <p class="confirm-subtitle">{{ modal.subtitle }}</p>
 
