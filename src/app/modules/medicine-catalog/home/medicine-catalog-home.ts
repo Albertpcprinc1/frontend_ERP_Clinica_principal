@@ -226,15 +226,15 @@ export class MedicineCatalogHomeComponent {
     }
 
     if (!draft.concentracion.trim()) {
-      errors.push('Ingrese la concentraciÃ³n.');
+      errors.push('Ingrese la concentraci\u00f3n.');
     }
 
     if (!draft.formaFarmaceutica.trim()) {
-      errors.push('Ingrese la forma farmacÃ©utica.');
+      errors.push('Ingrese la forma farmac\u00e9utica.');
     }
 
     if (!draft.presentacionComercial.trim()) {
-      errors.push('Ingrese la presentacion comercial.');
+      errors.push('Ingrese la presentaci\u00f3n comercial.');
     }
 
     if (!draft.unidadPresentacion.trim()) {

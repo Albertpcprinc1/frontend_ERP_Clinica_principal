@@ -382,7 +382,7 @@ export class AlmacenHomeComponent implements OnInit {
     this.ingresoErrorMessage.set('');
 
     if (this.ingresoOperationExecuted()) {
-      this.ingresoErrorMessage.set('Este ingreso ya fue registrado. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã‚Â³n.');
+      this.ingresoErrorMessage.set('Este ingreso ya fue registrado. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.');
       return;
     }
 
@@ -392,7 +392,7 @@ export class AlmacenHomeComponent implements OnInit {
     }
 
     if (!numeroLote) {
-      this.ingresoErrorMessage.set('Ingrese el nÃƒÆ’Ã‚Âºmero de lote.');
+      this.ingresoErrorMessage.set('Ingrese el n\u00famero de lote.');
       return;
     }
 
@@ -437,7 +437,7 @@ export class AlmacenHomeComponent implements OnInit {
     this.salidaErrorMessage.set('');
 
     if (this.salidaOperationExecuted()) {
-      this.salidaErrorMessage.set('Esta salida ya fue registrada. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã‚Â³n.');
+      this.salidaErrorMessage.set('Esta salida ya fue registrada. Modifique los datos para habilitar una nueva operaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.');
       return;
     }
 
@@ -561,7 +561,7 @@ export class AlmacenHomeComponent implements OnInit {
     }
 
     if (!numeroLote) {
-      this.ingresoErrorMessage.set('Ingrese el nÃƒÆ’Ã‚Âºmero de lote.');
+      this.ingresoErrorMessage.set('Ingrese el n\u00famero de lote.');
       return;
     }
 
@@ -598,7 +598,7 @@ export class AlmacenHomeComponent implements OnInit {
       costoUnitario: 0,
       stockMinimo: 10,
       cantidad: cantidadBase,
-      motivo: `${this.ingresoMotivo()} | ConversiÃƒÆ’Ã‚Â³n: ${this.ingresoConversionLabel()}`,
+      motivo: `${this.ingresoMotivo()} | Conversi\u00f3n: ${this.ingresoConversionLabel()}`,
       usuarioResponsable: this.ingresoUsuario()
     }).subscribe({
       next: (response) => {
@@ -757,7 +757,7 @@ export class AlmacenHomeComponent implements OnInit {
         this.medicines.set(items ?? []);
       },
       error: () => {
-        this.medicineErrorMessage.set('No se pudo cargar el catÃƒÆ’Ã‚Â¡logo de medicamentos.');
+        this.medicineErrorMessage.set('No se pudo cargar el catÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡logo de medicamentos.');
       }
     });
   }
