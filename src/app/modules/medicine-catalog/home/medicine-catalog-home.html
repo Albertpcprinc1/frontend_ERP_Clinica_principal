@@ -154,7 +154,7 @@
             <p class="eyebrow modal-eyebrow">Registro farmacéutico</p>
             <h2>Nuevo medicamento comercial</h2>
             <p>
-              Formulario visual preparado. En este bloque no se registra todavía en la base de datos.
+              Formulario conectado al backend. Al guardar, se registrara el medicamento comercial en la base de datos.
             </p>
           </div>
 
@@ -230,8 +230,18 @@
           </label>
 
           <label>
-            Presentación comercial obligatoria
-            <input type="text" [value]="draft().presentacionComercial" (input)="updateDraftText('presentacionComercial', $any($event.target).value)" placeholder="Ej. Caja x 100 cápsulas" />
+            Presentacion comercial obligatoria
+            <input type="text" [value]="draft().presentacionComercial" (input)="updateDraftText('presentacionComercial', $any($event.target).value)" placeholder="Ej. Caja x 100 capsulas" />
+          </label>
+
+          <label>
+            Unidad de presentacion obligatoria
+            <input type="text" [value]="draft().unidadPresentacion" (input)="updateDraftText('unidadPresentacion', $any($event.target).value)" placeholder="Ej. Caja" />
+          </label>
+
+          <label>
+            Factor conversion a unidad base
+            <input type="number" min="0.01" step="0.01" [value]="draft().factorConversionUnidadBase ?? ''" (input)="updateDraftNumber('factorConversionUnidadBase', $any($event.target).value)" placeholder="Ej. 100" />
           </label>
 
           <label>
@@ -285,9 +295,14 @@
         }
 
         <footer class="modal-footer">
-          <button type="button" class="clear-button" (click)="closeForm()">Cancelar</button>
-          <button type="button" class="primary-button" (click)="prepareVisualPayload()">
-            Validar formulario
+          <button type="button" class="clear-button" (click)="closeForm()" [disabled]="isSubmittingForm()">Cancelar</button>
+
+          <button type="button" class="secondary-button" (click)="prepareVisualPayload()" [disabled]="isSubmittingForm()">
+            Validar JSON
+          </button>
+
+          <button type="button" class="primary-button" (click)="saveMedicine()" [disabled]="isSubmittingForm()">
+            {{ isSubmittingForm() ? 'Guardando...' : 'Guardar medicamento real' }}
           </button>
         </footer>
       </section>

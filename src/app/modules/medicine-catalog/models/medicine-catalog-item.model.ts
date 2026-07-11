@@ -6,6 +6,8 @@ export interface MedicineCatalogItem {
   concentracion: string | null;
   formaFarmaceutica: string | null;
   presentacionComercial: string | null;
+  unidadPresentacion: string | null;
+  factorConversionUnidadBase: number | null;
   registroSanitario: string | null;
   stockTotalDisponible: number;
   totalLotesActivos: number;
@@ -21,6 +23,8 @@ export interface MedicineFormDraft {
   concentracion: string;
   formaFarmaceutica: string;
   presentacionComercial: string;
+  unidadPresentacion: string;
+  factorConversionUnidadBase: number | null;
   registroSanitario: string;
   esGenerico: boolean;
   requiereReceta: boolean;
@@ -29,6 +33,27 @@ export interface MedicineFormDraft {
   precioAseguradora: number | null;
   stockMinimoTotal: number | null;
   observaciones: string;
+}
+
+export interface MedicineCreateRequest {
+  dciId: number;
+  categoriaId: number | null;
+  laboratorioId: number | null;
+  unidadMedidaId: number | null;
+  nombreComercial: string;
+  concentracion: string;
+  formaFarmaceutica: string;
+  presentacionComercial: string;
+  unidadPresentacion: string;
+  factorConversionUnidadBase: number;
+  registroSanitario: string;
+  esGenerico: boolean;
+  requiereReceta: boolean;
+  requiereRecetaArchivada: boolean;
+  precioPublico: number | null;
+  precioAseguradora: number | null;
+  stockMinimoTotal: number | null;
+  observaciones: string | null;
 }
 
 export interface DciOption {

@@ -6,6 +6,7 @@ import {
   DciOption,
   LaboratoryOption,
   MedicineCatalogItem,
+  MedicineCreateRequest,
   MedicineFormDraft
 } from '../models/medicine-catalog-item.model';
 import { MedicineCatalogService } from '../services/medicine-catalog.service';
@@ -26,6 +27,7 @@ export class MedicineCatalogHomeComponent {
 
   readonly isFormOpen = signal(false);
   readonly isLoadingOptions = signal(false);
+  readonly isSubmittingForm = signal(false);
   readonly formErrorMessage = signal('');
   readonly formSuccessMessage = signal('');
   readonly formPayloadPreview = signal('');
@@ -82,7 +84,7 @@ export class MedicineCatalogHomeComponent {
         this.isLoading.set(false);
       },
       error: () => {
-        this.errorMessage.set('No se pudo cargar el catálogo de medicamentos comerciales.');
+        this.errorMessage.set('No se pudo cargar el catÃ¡logo de medicamentos comerciales.');
         this.isLoading.set(false);
       }
     });
@@ -113,7 +115,7 @@ export class MedicineCatalogHomeComponent {
         this.isLoadingOptions.set(false);
       },
       error: () => {
-        this.formErrorMessage.set('No se pudieron cargar los catálogos para el formulario.');
+        this.formErrorMessage.set('No se pudieron cargar los catÃ¡logos para el formulario.');
         this.isLoadingOptions.set(false);
       }
     });
@@ -165,7 +167,42 @@ export class MedicineCatalogHomeComponent {
     const payload = this.buildMedicinePayload();
 
     this.formPayloadPreview.set(JSON.stringify(payload, null, 2));
-    this.formSuccessMessage.set('Formulario validado. JSON preparado para enviar al backend en el siguiente bloque.');
+    this.formSuccessMessage.set('Formulario validado. Revise el JSON y luego guarde el medicamento real.');
+  }
+
+  saveMedicine(): void {
+    this.formErrorMessage.set('');
+    this.formSuccessMessage.set('');
+
+    const validationErrors = this.validateDraft();
+
+    if (validationErrors.length > 0) {
+      this.formErrorMessage.set(validationErrors.join(' | '));
+      return;
+    }
+
+    const payload = this.buildMedicinePayload();
+
+    this.formPayloadPreview.set(JSON.stringify(payload, null, 2));
+    this.isSubmittingForm.set(true);
+
+    this.medicineCatalogService.createMedicine(payload).subscribe({
+      next: () => {
+        this.formSuccessMessage.set('Medicamento comercial registrado correctamente.');
+        this.formErrorMessage.set('');
+        this.isSubmittingForm.set(false);
+        this.loadMedicines();
+
+        setTimeout(() => {
+          this.closeForm();
+        }, 700);
+      },
+      error: (error) => {
+        const message = error?.error?.message || 'No se pudo registrar el medicamento comercial.';
+        this.formErrorMessage.set(message);
+        this.isSubmittingForm.set(false);
+      }
+    });
   }
 
   stockStatusLabel(item: MedicineCatalogItem): string {
@@ -189,15 +226,23 @@ export class MedicineCatalogHomeComponent {
     }
 
     if (!draft.concentracion.trim()) {
-      errors.push('Ingrese la concentración.');
+      errors.push('Ingrese la concentraciÃ³n.');
     }
 
     if (!draft.formaFarmaceutica.trim()) {
-      errors.push('Ingrese la forma farmacéutica.');
+      errors.push('Ingrese la forma farmacÃ©utica.');
     }
 
     if (!draft.presentacionComercial.trim()) {
-      errors.push('Ingrese la presentación comercial.');
+      errors.push('Ingrese la presentacion comercial.');
+    }
+
+    if (!draft.unidadPresentacion.trim()) {
+      errors.push('Ingrese la unidad de presentacion.');
+    }
+
+    if (!draft.factorConversionUnidadBase || draft.factorConversionUnidadBase <= 0) {
+      errors.push('Ingrese un factor de conversion mayor a cero.');
     }
 
     if (!draft.registroSanitario.trim()) {
@@ -207,11 +252,11 @@ export class MedicineCatalogHomeComponent {
     return errors;
   }
 
-  private buildMedicinePayload(): Record<string, unknown> {
+  private buildMedicinePayload(): MedicineCreateRequest {
     const draft = this.draft();
 
     return {
-      dciId: draft.dciId,
+      dciId: Number(draft.dciId),
       categoriaId: draft.categoriaId,
       laboratorioId: draft.laboratorioId,
       unidadMedidaId: draft.unidadMedidaId,
@@ -219,6 +264,8 @@ export class MedicineCatalogHomeComponent {
       concentracion: draft.concentracion.trim(),
       formaFarmaceutica: draft.formaFarmaceutica.trim(),
       presentacionComercial: draft.presentacionComercial.trim(),
+      unidadPresentacion: draft.unidadPresentacion.trim(),
+      factorConversionUnidadBase: Number(draft.factorConversionUnidadBase),
       registroSanitario: draft.registroSanitario.trim(),
       esGenerico: draft.esGenerico,
       requiereReceta: draft.requiereReceta,
@@ -240,6 +287,8 @@ export class MedicineCatalogHomeComponent {
       concentracion: '',
       formaFarmaceutica: '',
       presentacionComercial: '',
+      unidadPresentacion: 'Caja',
+      factorConversionUnidadBase: 100,
       registroSanitario: '',
       esGenerico: false,
       requiereReceta: true,

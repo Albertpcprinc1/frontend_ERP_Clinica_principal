@@ -8,6 +8,7 @@ import {
   DciOption,
   LaboratoryOption,
   MedicineCatalogItem,
+  MedicineCreateRequest,
   MedicineFormOptions
 } from '../models/medicine-catalog-item.model';
 
@@ -21,6 +22,8 @@ interface ApiMedicine {
   formaFarmaceutica?: string | null;
   presentacionComercial?: string | null;
   presentacion?: string | null;
+  unidadPresentacion?: string | null;
+  factorConversionUnidadBase?: number | null;
   registroSanitario?: string | null;
   activo?: boolean;
 }
@@ -61,6 +64,10 @@ export class MedicineCatalogService {
     );
   }
 
+  createMedicine(payload: MedicineCreateRequest): Observable<ApiMedicine> {
+    return this.http.post<ApiMedicine>(this.medicinesUrl, payload);
+  }
+
   getFormOptions(): Observable<MedicineFormOptions> {
     return forkJoin({
       dci: this.http.get<DciOption[]>(this.dciUrl),
@@ -95,6 +102,8 @@ export class MedicineCatalogService {
           concentracion: medicine.concentracion ?? null,
           formaFarmaceutica: medicine.formaFarmaceutica ?? null,
           presentacionComercial: medicine.presentacionComercial ?? medicine.presentacion ?? null,
+          unidadPresentacion: medicine.unidadPresentacion ?? null,
+          factorConversionUnidadBase: medicine.factorConversionUnidadBase ?? null,
           registroSanitario: medicine.registroSanitario ?? null,
           stockTotalDisponible,
           totalLotesActivos: relatedLots.length,
